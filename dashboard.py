@@ -81,12 +81,12 @@ html, body, [class*="css"] {
 
 /* Header */
 .main-header {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    background: linear-gradient(135deg, #002244 0%, #003366 50%, #002244 100%);
     padding: 1.8rem 2.2rem;
     border-radius: 16px;
     margin-bottom: 1.5rem;
-    border: 1px solid rgba(99,102,241,0.15);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    border: 1px solid rgba(32,198,182,0.2);
+    box-shadow: 0 4px 24px rgba(0,51,102,0.15);
 }
 .main-header h1 {
     color: #f8fafc;
@@ -96,16 +96,16 @@ html, body, [class*="css"] {
     letter-spacing: -0.5px;
 }
 .main-header p {
-    color: #94a3b8;
+    color: #B3D9EA;
     font-size: 0.88rem;
     margin: 0.3rem 0 0 0;
 }
-.accent-dot { color: #818cf8; }
+.accent-dot { color: #20C6B6; }
 
 /* KPI Cards */
 .kpi-card {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #B3D9EA;
     border-radius: 14px;
     padding: 1.3rem 1.5rem;
     text-align: left;
@@ -121,14 +121,14 @@ html, body, [class*="css"] {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: #64748b;
+    color: #4D7EA8;
     margin-bottom: 0.35rem;
 }
 .kpi-value {
     font-family: 'JetBrains Mono', monospace;
     font-size: 1.55rem;
     font-weight: 700;
-    color: #0f172a;
+    color: #003366;
     line-height: 1.2;
 }
 .kpi-delta {
@@ -136,30 +136,30 @@ html, body, [class*="css"] {
     font-weight: 600;
     margin-top: 0.25rem;
 }
-.kpi-delta.positive { color: #10b981; }
+.kpi-delta.positive { color: #20C6B6; }
 .kpi-delta.negative { color: #ef4444; }
 
 /* Section titles */
 .section-title {
     font-size: 1.05rem;
     font-weight: 700;
-    color: #1e293b;
+    color: #003366;
     margin: 1.8rem 0 0.8rem 0;
     padding-bottom: 0.5rem;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid #20C6B6;
     letter-spacing: -0.3px;
 }
 
 /* Sidebar */
 section[data-testid="stSidebar"] {
-    background: #f8fafc;
-    border-right: 1px solid #e2e8f0;
+    background: #F9F9F9;
+    border-right: 1px solid #B3D9EA;
 }
 section[data-testid="stSidebar"] .stMarkdown h3 {
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #64748b;
+    color: #003366;
     font-weight: 600;
     margin-top: 1rem;
 }
@@ -177,24 +177,30 @@ header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-# ─── CHART COLOR PALETTE ───────────────────────────────────────────────────
+# ─── NOMII INSTITUTIONAL COLORS ────────────────────────────────────────────
+NOMII = {
+    "primary": "#003366",      # Azul Profundo
+    "secondary": "#20C6B6",    # Turquesa Clínico
+    "accent": "#FFCC00",       # Dorado
+    "text": "#333333",         # Gris oscuro
+    "background": "#F9F9F9",   # Fondo suave
+    "light_blue": "#4D7EA8",
+    "pale_blue": "#B3D9EA",
+}
+
 PALETTE = [
-    "#6366f1", "#818cf8", "#a5b4fc", "#c7d2fe",   # indigo
-    "#10b981", "#34d399", "#6ee7b7",               # emerald
-    "#f59e0b", "#fbbf24", "#fcd34d",               # amber
-    "#ef4444", "#f87171",                           # red
-    "#06b6d4", "#22d3ee",                           # cyan
-    "#8b5cf6", "#a78bfa",                           # violet
-    "#ec4899", "#f472b6",                           # pink
+    "#003366", "#20C6B6", "#4D7EA8", "#FFCC00", "#B3D9EA",  # NOMII core
+    "#005599", "#17a89c", "#6A9BC3", "#FFD633", "#CCE5F0",  # NOMII lighter
+    "#001a33", "#0f8a7e", "#3a6d8c", "#CC9900", "#8AB8D0",  # NOMII darker
 ]
 
 CHART_LAYOUT = dict(
-    font=dict(family="DM Sans", color="#334155"),
+    font=dict(family="DM Sans", color=NOMII["text"]),
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     margin=dict(l=40, r=20, t=40, b=40),
     hoverlabel=dict(
-        bgcolor="#1e293b",
+        bgcolor=NOMII["primary"],
         font_size=12,
         font_family="DM Sans",
         font_color="#f8fafc",
@@ -345,7 +351,7 @@ with c1:
         go.Bar(
             x=monthly["Mes"], y=monthly["Gasto"],
             name="Gasto Mensual",
-            marker=dict(color="#6366f1", cornerradius=4),
+            marker=dict(color=NOMII["primary"], cornerradius=4),
             hovertemplate="<b>%{x}</b><br>€%{y:,.0f}<extra></extra>",
         ),
         secondary_y=False,
@@ -355,7 +361,7 @@ with c1:
             x=monthly["Mes"], y=monthly["Acumulado"],
             name="Acumulado",
             mode="lines+markers",
-            line=dict(color="#f59e0b", width=2.5),
+            line=dict(color=NOMII["secondary"], width=2.5),
             marker=dict(size=5),
             hovertemplate="<b>%{x}</b><br>Acum: €%{y:,.0f}<extra></extra>",
         ),
@@ -423,7 +429,7 @@ with c3:
             z=heatmap_data.values,
             x=heatmap_data.columns.tolist(),
             y=heatmap_data.index.tolist(),
-            colorscale=[[0, "#f8fafc"], [0.3, "#c7d2fe"], [0.6, "#818cf8"], [1, "#4338ca"]],
+            colorscale=[[0, "#F9F9F9"], [0.3, "#B3D9EA"], [0.6, "#4D7EA8"], [1, "#003366"]],
             hovertemplate="<b>%{y}</b><br>%{x}<br>€%{z:,.0f}<extra></extra>",
             colorbar=dict(title="EUR", tickformat="€,.0f", len=0.8),
         )
@@ -481,7 +487,7 @@ with c5:
         .reset_index()
         .sort_values("Year_Month")
     )
-    color_map_acct = {"OPEX": "#6366f1", "CAPEX": "#10b981", "COR": "#f59e0b"}
+    color_map_acct = {"OPEX": NOMII["primary"], "CAPEX": NOMII["secondary"], "COR": NOMII["accent"]}
     fig_acct = px.bar(
         acct_monthly,
         x="Year_Month", y="Abs_Amount", color="Accounting Type",
@@ -503,7 +509,7 @@ with c5:
 # ── Cost Behavior pie
 with c6:
     cb_data = df.groupby("Cost Behavior")["Abs_Amount"].sum().reset_index()
-    color_map_cb = {"Costo fijo": "#6366f1", "Costo variable": "#10b981", "Costo único": "#f59e0b"}
+    color_map_cb = {"Costo fijo": NOMII["primary"], "Costo variable": NOMII["secondary"], "Costo único": NOMII["accent"]}
     fig_cb = go.Figure(
         go.Pie(
             labels=cb_data["Cost Behavior"],
@@ -531,7 +537,7 @@ with c7:
         path=["Business Function"],
         values="Abs_Amount",
         color="Abs_Amount",
-        color_continuous_scale=["#c7d2fe", "#6366f1", "#3730a3"],
+        color_continuous_scale=[NOMII["pale_blue"], NOMII["primary"], "#001a33"],
     )
     fig_bf.update_layout(
         **CHART_LAYOUT,
@@ -567,7 +573,7 @@ with c8:
             y=tri_data["Abs_Amount"],
             marker=dict(
                 color=tri_data["Abs_Amount"],
-                colorscale=[[0, "#a5b4fc"], [1, "#4338ca"]],
+                colorscale=[[0, NOMII["pale_blue"]], [1, NOMII["primary"]]],
                 cornerradius=6,
             ),
             hovertemplate="<b>%{x}</b><br>€%{y:,.0f}<extra></extra>",
@@ -593,7 +599,7 @@ with c9:
         .reset_index()
         .sort_values("Year_Month")
     )
-    color_map_fac = {"GmbH": "#6366f1", "SpA": "#10b981"}
+    color_map_fac = {"GmbH": NOMII["primary"], "SpA": NOMII["secondary"]}
     fig_fac = px.area(
         fac_monthly,
         x="Year_Month", y="Abs_Amount", color="Facturacion",
@@ -628,7 +634,7 @@ fig_cp = go.Figure(
         orientation="h",
         marker=dict(
             color=top_cp["Abs_Amount"],
-            colorscale=[[0, "#a5b4fc"], [0.5, "#6366f1"], [1, "#3730a3"]],
+            colorscale=[[0, NOMII["pale_blue"]], [0.5, NOMII["light_blue"]], [1, NOMII["primary"]]],
             cornerradius=4,
         ),
         hovertemplate="<b>%{y}</b><br>€%{x:,.0f}<extra></extra>",
@@ -665,7 +671,7 @@ with c10:
         path=["Category", "Sub-Category 1", "Sub-Category 2"],
         values="Abs_Amount",
         color="Abs_Amount",
-        color_continuous_scale=["#e0e7ff", "#818cf8", "#3730a3"],
+        color_continuous_scale=[NOMII["pale_blue"], NOMII["light_blue"], NOMII["primary"]],
     )
     fig_sun.update_layout(
         **CHART_LAYOUT,

@@ -336,7 +336,49 @@ def load_ingresos():
 
 df_ingresos_raw = load_ingresos()
 
-# ─── SIDEBAR FILTERS ───────────────────────────────────────────────────────
+
+def _get_excel_source():
+    """Helper to get Excel bytes from SharePoint or local."""
+    import requests
+    from io import BytesIO
+    sharepoint_url = st.secrets.get("sharepoint", {}).get("url", "")
+    if sharepoint_url:
+        try:
+            download_url = sharepoint_url + ("&download=1" if "?" in sharepoint_url else "?download=1")
+            resp = requests.get(download_url, timeout=30)
+            resp.raise_for_status()
+            return BytesIO(resp.content)
+        except Exception:
+            pass
+    return "Maestro Pagos NOMII 07-03-2026.xlsx"
+
+
+@st.cache_data(ttl=3600)
+def load_calendario():
+    src = _get_excel_source()
+    df = pd.read_excel(src, sheet_name="CALENDARIO INGRESOS", engine="openpyxl")
+    df["FECHA"] = pd.to_datetime(df["FECHA"], errors="coerce")
+    df["MONTO"] = pd.to_numeric(df["MONTO"], errors="coerce").fillna(0)
+    return df
+
+
+@st.cache_data(ttl=3600)
+def load_resumen_clientes():
+    src = _get_excel_source()
+    return pd.read_excel(src, sheet_name="RESUMEN CLIENTES", engine="openpyxl")
+
+
+@st.cache_data(ttl=3600)
+def load_cohortes():
+    src = _get_excel_source()
+    df = pd.read_excel(src, sheet_name="COHORTES INGRESO", engine="openpyxl")
+    df["MES"] = pd.to_datetime(df["MES"], errors="coerce")
+    return df
+
+
+df_calendario = load_calendario()
+df_clientes = load_resumen_clientes()
+df_cohortes = load_cohortes()
 with st.sidebar:
     st.markdown("## 🔎 Filtros")
 
@@ -403,7 +445,7 @@ st.markdown(
 )
 
 # ─── PAGE TABS ──────────────────────────────────────────────────────────────
-tab_gastos, tab_ingresos = st.tabs(["💸 Gastos (Salidas)", "💰 Ingresos"])
+tab_gastos, tab_ingresos, tab_kpis = st.tabs(["💸 Gastos (Salidas)", "💰 Ingresos", "📊 KPIs Ejecutivos"])
 
 # ═════════════════════════════════════════════════════════════════════════════
 # TAB 1: GASTOS (SALIDAS)
@@ -1177,6 +1219,227 @@ with tab_ingresos:
             "CARGO": st.column_config.NumberColumn("Cargo €", format="€%.2f"),
         },
     )
+
+# ═════════════════════════════════════════════════════════════════════════════
+# TAB 3: KPIs EJECUTIVOS
+# ═════════════════════════════════════════════════════════════════════════════
+with tab_kpis:
+    # ── Month Selector ──────────────────────────────────────────────────────
+    available_months = sorted(df_calendario["FECHA"].dropna().dt.to_period("M").unique())
+    month_labels = [str(m) for m in available_months]
+    default_idx = len(month_labels) - 1 if month_labels else 0
+    sel_month_label = st.selectbox("📅 Selecciona el mes", month_labels, index=default_idx)
+    sel_period = pd.Period(sel_month_label, freq="M")
+
+    # ── Filter data for selected month ─────────────────────────────────────
+    cal_month = df_calendario[df_calendario["FECHA"].dt.to_period("M") == sel_period]
+
+    # Revenue KPIs
+    total_planificado = cal_month["MONTO"].sum()
+    pagadas = cal_month[cal_month["ESTADO FACTURA"] == "PAGADA"]
+    ingreso_cobrado = pagadas["MONTO"].sum()
+    cantidad_cobrada = len(pagadas)
+    ratio_cobranza = (ingreso_cobrado / total_planificado * 100) if total_planificado else 0
+
+    # Receivables KPIs
+    pendiente = total_planificado - ingreso_cobrado
+    atrasadas = cal_month[cal_month["ESTADO FACTURA"] == "EMITIDA"]
+    cuotas_atrasadas_monto = atrasadas["MONTO"].sum()
+    cuotas_atrasadas_cant = len(atrasadas)
+    por_cobrar = cal_month[cal_month["ESTADO FACTURA"] == "POR EMITIR"]
+    cuotas_por_cobrar_monto = por_cobrar["MONTO"].sum()
+    cuotas_por_cobrar_cant = len(por_cobrar)
+
+    # Expenses KPI
+    sal_month = df[
+        (df["Date"].dt.to_period("M") == sel_period)
+    ] if "Date" in df.columns else pd.DataFrame()
+    total_salidas = sal_month["Amount in EUR"].sum() if len(sal_month) > 0 else 0
+
+    # Margin and EBITDA
+    margen_bruto = ingreso_cobrado + total_salidas  # salidas is negative
+    # EBITDA = Margen Bruto - (COR expenses which are recurrent SaaS-like costs)
+    cor_expenses = sal_month[sal_month["Accounting Type"] == "COR"]["Amount in EUR"].sum().item() if len(sal_month) > 0 and "Accounting Type" in sal_month.columns else 0
+    ebitda = margen_bruto + cor_expenses  # cor_expenses is negative, so this subtracts
+
+    # Client KPIs
+    coh_month = df_cohortes[df_cohortes["MES"].dt.to_period("M") == sel_period]
+    if len(coh_month) > 0:
+        row_coh = coh_month.iloc[0]
+        clientes_activos = int(row_coh.get("CANTIDAD CLIENTES ACTIVOS X MES", 0))
+        nuevos_clientes = int(row_coh.get("NUEVOS CLIENTES TOTAL", 0))
+        eliminados_mes = int(row_coh.get("ELIMINADOS X MES", 0))
+    else:
+        # Fallback to RESUMEN CLIENTES
+        clientes_activos = len(df_clientes[df_clientes["ESTADO"] == "OK"])
+        nuevos_clientes = 0
+        eliminados_mes = 0
+
+    # ── RENDER KPIs ───────────────────────────────────────────────────────
+    st.markdown(f"""
+    <style>
+    .exec-row {{ display: flex; gap: 1rem; margin-bottom: 1.2rem; flex-wrap: wrap; }}
+    .exec-card {{
+        flex: 1; min-width: 180px; background: #fff; border: 2px solid #B3D9EA;
+        border-radius: 14px; padding: 1.2rem 1rem; text-align: center;
+        box-shadow: 0 2px 8px rgba(0,51,102,0.06);
+    }}
+    .exec-card.highlight {{ border-color: #003366; background: linear-gradient(135deg, #f0f7ff 0%, #e8f4f8 100%); }}
+    .exec-card.warn {{ border-color: #e74c3c; }}
+    .exec-card.green {{ border-color: #20C6B6; }}
+    .exec-label {{ font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+                   letter-spacing: 0.06em; color: #003366; margin-bottom: 0.3rem; }}
+    .exec-value {{ font-size: 1.7rem; font-weight: 700; color: #003366; line-height: 1.2; }}
+    .exec-value.turquoise {{ color: #20C6B6; }}
+    .exec-value.gold {{ color: #d4a017; }}
+    .exec-value.red {{ color: #e74c3c; }}
+    .exec-value.green {{ color: #0a8f5f; }}
+    .exec-sub {{ font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }}
+    .exec-section {{ font-size: 0.9rem; font-weight: 700; color: #003366; margin: 1.5rem 0 0.6rem;
+                     border-bottom: 2px solid #20C6B6; padding-bottom: 0.3rem; }}
+    </style>
+
+    <div class="exec-section">💰 Ingresos — {sel_month_label}</div>
+    <div class="exec-row">
+        <div class="exec-card highlight">
+            <div class="exec-label">Total Ingreso Planificado</div>
+            <div class="exec-value">€{total_planificado:,.0f}</div>
+        </div>
+        <div class="exec-card">
+            <div class="exec-label">Ingreso Cobrado</div>
+            <div class="exec-value turquoise">€{ingreso_cobrado:,.0f}</div>
+        </div>
+        <div class="exec-card">
+            <div class="exec-label">Cantidad</div>
+            <div class="exec-value">{cantidad_cobrada}</div>
+        </div>
+        <div class="exec-card highlight">
+            <div class="exec-label">Ratio Cobranza</div>
+            <div class="exec-value gold">{ratio_cobranza:.2f}%</div>
+        </div>
+    </div>
+
+    <div class="exec-section">📋 Cuentas por Cobrar</div>
+    <div class="exec-row">
+        <div class="exec-card warn">
+            <div class="exec-label">Ingreso Pendiente por Cobrar</div>
+            <div class="exec-value red">{pendiente:,.0f}</div>
+        </div>
+        <div class="exec-card">
+            <div class="exec-label">Cuotas Atrasadas</div>
+            <div class="exec-value red">{cuotas_atrasadas_monto:,.0f}</div>
+            <div class="exec-sub">Cantidad: {cuotas_atrasadas_cant}</div>
+        </div>
+        <div class="exec-card">
+            <div class="exec-label">Cuotas por Cobrar</div>
+            <div class="exec-value gold">{cuotas_por_cobrar_monto:,.0f}</div>
+            <div class="exec-sub">Cantidad: {cuotas_por_cobrar_cant}</div>
+        </div>
+    </div>
+
+    <div class="exec-section">📊 Resultados Financieros</div>
+    <div class="exec-row">
+        <div class="exec-card">
+            <div class="exec-label">Total Salidas</div>
+            <div class="exec-value red">{total_salidas:,.2f}</div>
+        </div>
+        <div class="exec-card highlight">
+            <div class="exec-label">Margen Bruto</div>
+            <div class="exec-value {'green' if margen_bruto >= 0 else 'red'}">{margen_bruto:,.2f}</div>
+        </div>
+        <div class="exec-card highlight">
+            <div class="exec-label">EBITDA</div>
+            <div class="exec-value {'green' if ebitda >= 0 else 'red'}">{ebitda:,.2f}</div>
+        </div>
+    </div>
+
+    <div class="exec-section">👥 Clientes — {sel_month_label}</div>
+    <div class="exec-row">
+        <div class="exec-card green">
+            <div class="exec-label">Total Clientes Activos</div>
+            <div class="exec-value">{clientes_activos}</div>
+        </div>
+        <div class="exec-card">
+            <div class="exec-label">Nuevos Clientes</div>
+            <div class="exec-value turquoise">{nuevos_clientes}</div>
+        </div>
+        <div class="exec-card">
+            <div class="exec-label">Clientes Eliminados</div>
+            <div class="exec-value">{eliminados_mes}</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Mini Charts ──────────────────────────────────────────────────────
+    st.markdown('<div class="section-title">📈 Evolución Mensual</div>', unsafe_allow_html=True)
+    ck1, ck2 = st.columns(2)
+
+    with ck1:
+        # Monthly planned vs collected
+        plan_hist = (
+            df_calendario.groupby(df_calendario["FECHA"].dt.to_period("M"))
+            .agg(Planificado=("MONTO", "sum"))
+            .reset_index()
+        )
+        paid_hist = (
+            df_calendario[df_calendario["ESTADO FACTURA"] == "PAGADA"]
+            .groupby(df_calendario.loc[df_calendario["ESTADO FACTURA"] == "PAGADA", "FECHA"].dt.to_period("M"))
+            .agg(Cobrado=("MONTO", "sum"))
+            .reset_index()
+        )
+        plan_hist["Mes"] = plan_hist["FECHA"].astype(str)
+        paid_hist["Mes"] = paid_hist["FECHA"].astype(str)
+        merged = plan_hist.merge(paid_hist[["Mes", "Cobrado"]], on="Mes", how="left").fillna(0).sort_values("Mes")
+
+        fig_plan = go.Figure()
+        fig_plan.add_trace(go.Bar(x=merged["Mes"], y=merged["Planificado"], name="Planificado",
+                                   marker=dict(color=NOMII["pale_blue"], cornerradius=4)))
+        fig_plan.add_trace(go.Bar(x=merged["Mes"], y=merged["Cobrado"], name="Cobrado",
+                                   marker=dict(color=NOMII["secondary"], cornerradius=4)))
+        fig_plan.update_layout(
+            **CHART_LAYOUT,
+            title=dict(text="Planificado vs Cobrado por Mes", font=dict(size=14)),
+            barmode="overlay", height=380,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
+            yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+        )
+        st.plotly_chart(fig_plan, use_container_width=True)
+
+    with ck2:
+        # Client evolution
+        coh_sorted = df_cohortes.dropna(subset=["MES"]).sort_values("MES").copy()
+        coh_sorted["Mes"] = coh_sorted["MES"].dt.strftime("%Y-%m")
+        if "CANTIDAD CLIENTES ACTIVOS X MES" in coh_sorted.columns:
+            fig_cli = go.Figure()
+            fig_cli.add_trace(go.Scatter(
+                x=coh_sorted["Mes"],
+                y=coh_sorted["CANTIDAD CLIENTES ACTIVOS X MES"],
+                mode="lines+markers+text",
+                name="Clientes Activos",
+                line=dict(color=NOMII["primary"], width=3),
+                marker=dict(size=8),
+                text=coh_sorted["CANTIDAD CLIENTES ACTIVOS X MES"].astype(int),
+                textposition="top center",
+                textfont=dict(size=10),
+            ))
+            if "NUEVOS CLIENTES TOTAL" in coh_sorted.columns:
+                fig_cli.add_trace(go.Bar(
+                    x=coh_sorted["Mes"],
+                    y=coh_sorted["NUEVOS CLIENTES TOTAL"],
+                    name="Nuevos",
+                    marker=dict(color=NOMII["secondary"], cornerradius=4),
+                    opacity=0.7,
+                ))
+            fig_cli.update_layout(
+                **CHART_LAYOUT,
+                title=dict(text="Evolución de Clientes", font=dict(size=14)),
+                height=380,
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
+                yaxis=dict(gridcolor="#f1f5f9"),
+                xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+            )
+            st.plotly_chart(fig_cli, use_container_width=True)
 
 # ─── FOOTER ─────────────────────────────────────────────────────────────────
 st.markdown("---")

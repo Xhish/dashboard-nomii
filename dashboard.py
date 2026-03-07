@@ -840,7 +840,7 @@ with tab_ingresos:
         mom_str_r = ""
 
     # Extraer datos de clientes para MRR y Churn desde RESUMEN CLIENTES
-    df_clientes = load_resumen_clientes(EXCEL_SOURCE)
+    df_clientes = load_resumen_clientes()
     
     if df_clientes is not None and len(df_clientes) > 0 and len(df_ing) > 0:
         latest_month_ing = df_ing["FECHA"].max().to_period("M")

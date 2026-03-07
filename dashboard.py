@@ -843,19 +843,12 @@ with tab_ingresos:
     df_clientes = load_resumen_clientes()
     
     if df_clientes is not None and len(df_clientes) > 0 and len(df_ing) > 0:
-        latest_month_ing = df_ing["FECHA"].max().to_period("M")
-        client_row = df_clientes[df_clientes["Mes"] == str(latest_month_ing)]
+        activos = len(df_clientes[df_clientes["ESTADO"].isin(["OK", "¡REGULARIZAR!"])])
+        eliminados = len(df_clientes[df_clientes["ESTADO"] == "ELIMINADO"])
         
-        if len(client_row) > 0:
-            activos = client_row.iloc[0].get("Clientes Activos", 0)
-            eliminados = client_row.iloc[0].get("Eliminados", 0)
-            avg_mrr = avg_ing  # Estimación simple de MRR promedio por cliente
-            mrr_total = activos * avg_mrr if activos > 0 else total_rev
-            churn_rate = (eliminados / activos * 100) if activos > 0 else 0
-        else:
-            mrr_total = total_rev
-            churn_rate = 0
-            activos = n_clients
+        avg_mrr = avg_ing  # Estimación simple de MRR promedio por cliente
+        mrr_total = activos * avg_mrr if activos > 0 else total_rev
+        churn_rate = (eliminados / (activos + eliminados) * 100) if (activos + eliminados) > 0 else 0
     else:
         mrr_total = total_rev
         churn_rate = 0

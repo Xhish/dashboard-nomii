@@ -445,7 +445,7 @@ st.markdown(
 )
 
 # ─── PAGE TABS ──────────────────────────────────────────────────────────────
-tab_gastos, tab_ingresos, tab_kpis = st.tabs(["💸 Gastos (Salidas)", "💰 Ingresos", "📊 KPIs Ejecutivos"])
+tab_gastos, tab_ingresos, tab_kpis, tab_eerr = st.tabs(["💸 Gastos", "💰 Ingresos", "📊 KPIs Ejecutivos", "📑 Estado de Resultados"])
 
 # ═════════════════════════════════════════════════════════════════════════════
 # TAB 1: GASTOS (SALIDAS)
@@ -1440,6 +1440,245 @@ with tab_kpis:
                 xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
             )
             st.plotly_chart(fig_cli, use_container_width=True)
+
+# ═════════════════════════════════════════════════════════════════════════════
+# TAB 4: ESTADO DE RESULTADOS (EERR)
+# ═════════════════════════════════════════════════════════════════════════════
+with tab_eerr:
+    st.markdown('<div class="section-title">📑 Estado de Resultados Mensual</div>', unsafe_allow_html=True)
+
+    # ── Build P&L from INGRESOS and SALIDAS ─────────────────────────────
+    # Get all months from both sources
+    ing_raw = df_ingresos_raw.copy()
+    sal_raw = df_raw.copy()
+
+    all_months = sorted(set(
+        list(ing_raw["FECHA"].dt.to_period("M").dropna().unique()) +
+        list(sal_raw["Date"].dt.to_period("M").dropna().unique())
+    ))
+
+    eerr_rows = []
+    for period in all_months:
+        # Revenue
+        ing_m = ing_raw[ing_raw["FECHA"].dt.to_period("M") == period]
+        ingreso_cobrado = ing_m["Ingreso_Abs"].sum() if len(ing_m) > 0 else 0
+
+        # Expenses by accounting type
+        sal_m = sal_raw[sal_raw["Date"].dt.to_period("M") == period]
+        cor = sal_m[sal_m["Accounting Type"] == "COR"]["Amount in EUR"].sum() if len(sal_m) > 0 else 0
+        opex = sal_m[sal_m["Accounting Type"] == "OPEX"]["Amount in EUR"].sum() if len(sal_m) > 0 else 0
+        capex = sal_m[sal_m["Accounting Type"] == "CAPEX"]["Amount in EUR"].sum() if len(sal_m) > 0 else 0
+        total_salidas = sal_m["Amount in EUR"].sum() if len(sal_m) > 0 else 0
+
+        # OPEX sub-categories by Department
+        opex_sw = sal_m[(sal_m["Accounting Type"] == "OPEX") & (sal_m["Category"] == "Software")]["Amount in EUR"].sum() if len(sal_m) > 0 else 0
+        opex_mkt = sal_m[(sal_m["Accounting Type"] == "OPEX") & (sal_m["Department"] == "Marketing")]["Amount in EUR"].sum() if len(sal_m) > 0 else 0
+        opex_ops = sal_m[(sal_m["Accounting Type"] == "OPEX") & (sal_m["Department"] == "Operaciones")]["Amount in EUR"].sum() if len(sal_m) > 0 else 0
+        opex_gen = opex - opex_sw - opex_mkt - opex_ops
+
+        margen_bruto = ingreso_cobrado + cor  # cor is negative
+        ebitda = margen_bruto + opex  # opex is negative
+        fcf = ebitda + capex  # capex is negative
+
+        eerr_rows.append({
+            "Mes": str(period),
+            "Ingreso Cobrado": ingreso_cobrado,
+            "COR": cor,
+            "Margen Bruto": margen_bruto,
+            "% Margen": (margen_bruto / ingreso_cobrado * 100) if ingreso_cobrado > 0 else 0,
+            "OPEX Total": opex,
+            "OPEX Software": opex_sw,
+            "OPEX Marketing": opex_mkt,
+            "OPEX Operaciones": opex_ops,
+            "OPEX General": opex_gen,
+            "EBITDA": ebitda,
+            "% EBITDA": (ebitda / ingreso_cobrado * 100) if ingreso_cobrado > 0 else 0,
+            "CAPEX": capex,
+            "FCF": fcf,
+        })
+
+    df_eerr = pd.DataFrame(eerr_rows)
+
+    # ── ROW 1: P&L Waterfall for latest month + Margin evolution ────────
+    ce1, ce2 = st.columns(2)
+
+    with ce1:
+        # Waterfall chart for latest month
+        latest = df_eerr.iloc[-1] if len(df_eerr) > 0 else None
+        if latest is not None:
+            wf_labels = ["Ingreso", "COR", "Margen Bruto", "OPEX", "EBITDA", "CAPEX", "FCF"]
+            wf_values = [
+                latest["Ingreso Cobrado"],
+                latest["COR"],
+                latest["Margen Bruto"],
+                latest["OPEX Total"],
+                latest["EBITDA"],
+                latest["CAPEX"],
+                latest["FCF"],
+            ]
+            wf_measure = ["absolute", "relative", "total", "relative", "total", "relative", "total"]
+            wf_colors = [NOMII["secondary"], "#e74c3c", NOMII["primary"], "#e74c3c", NOMII["light_blue"], "#e74c3c", NOMII["primary"]]
+
+            fig_wf = go.Figure(go.Waterfall(
+                x=wf_labels,
+                y=wf_values,
+                measure=wf_measure,
+                connector=dict(line=dict(color="#B3D9EA", width=1)),
+                increasing=dict(marker=dict(color=NOMII["secondary"])),
+                decreasing=dict(marker=dict(color="#e74c3c")),
+                totals=dict(marker=dict(color=NOMII["primary"])),
+                textposition="outside",
+                text=[f"€{v:,.0f}" for v in wf_values],
+                textfont=dict(size=10),
+            ))
+            fig_wf.update_layout(
+                **CHART_LAYOUT,
+                title=dict(text=f"Cascada P&L — {latest['Mes']}", font=dict(size=14)),
+                height=420,
+                yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+                showlegend=False,
+            )
+            st.plotly_chart(fig_wf, use_container_width=True)
+
+    with ce2:
+        # Margin % evolution
+        fig_margin = go.Figure()
+        fig_margin.add_trace(go.Scatter(
+            x=df_eerr["Mes"], y=df_eerr["% Margen"],
+            name="% Margen Bruto",
+            mode="lines+markers",
+            line=dict(color=NOMII["secondary"], width=2.5),
+            marker=dict(size=6),
+            hovertemplate="<b>%{x}</b><br>Margen: %{y:.1f}%<extra></extra>",
+        ))
+        fig_margin.add_trace(go.Scatter(
+            x=df_eerr["Mes"], y=df_eerr["% EBITDA"],
+            name="% EBITDA",
+            mode="lines+markers",
+            line=dict(color=NOMII["primary"], width=2.5),
+            marker=dict(size=6),
+            hovertemplate="<b>%{x}</b><br>EBITDA: %{y:.1f}%<extra></extra>",
+        ))
+        fig_margin.add_hline(y=0, line_dash="dash", line_color="#94a3b8", line_width=1)
+        fig_margin.update_layout(
+            **CHART_LAYOUT,
+            title=dict(text="Evolución de Márgenes (%)", font=dict(size=14)),
+            height=420,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
+            yaxis=dict(gridcolor="#f1f5f9", ticksuffix="%"),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+        )
+        st.plotly_chart(fig_margin, use_container_width=True)
+
+    # ── ROW 2: OPEX Breakdown + Cumulative FCF ─────────────────────────
+    st.markdown('<div class="section-title">📊 Desglose OPEX & Flujo de Caja</div>', unsafe_allow_html=True)
+    ce3, ce4 = st.columns(2)
+
+    with ce3:
+        # OPEX breakdown stacked bar
+        fig_opex = go.Figure()
+        opex_cats = [
+            ("Software", "OPEX Software", NOMII["primary"]),
+            ("Marketing", "OPEX Marketing", NOMII["secondary"]),
+            ("Operaciones", "OPEX Operaciones", NOMII["accent"]),
+            ("General", "OPEX General", NOMII["light_blue"]),
+        ]
+        for name, col, color in opex_cats:
+            fig_opex.add_trace(go.Bar(
+                x=df_eerr["Mes"],
+                y=df_eerr[col].abs(),
+                name=name,
+                marker=dict(color=color, cornerradius=2),
+                hovertemplate=f"<b>{name}</b><br>%{{x}}<br>€%{{y:,.0f}}<extra></extra>",
+            ))
+        fig_opex.update_layout(
+            **CHART_LAYOUT,
+            title=dict(text="Desglose OPEX por Área", font=dict(size=14)),
+            barmode="stack", height=420,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
+            yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+        )
+        st.plotly_chart(fig_opex, use_container_width=True)
+
+    with ce4:
+        # Cumulative FCF
+        df_eerr["FCF_Acum"] = df_eerr["FCF"].cumsum()
+        fig_fcf = go.Figure()
+        fig_fcf.add_trace(go.Bar(
+            x=df_eerr["Mes"], y=df_eerr["FCF"],
+            name="FCF Mensual",
+            marker=dict(
+                color=[NOMII["secondary"] if v >= 0 else "#e74c3c" for v in df_eerr["FCF"]],
+                cornerradius=4,
+            ),
+            hovertemplate="<b>%{x}</b><br>FCF: €%{y:,.0f}<extra></extra>",
+        ))
+        fig_fcf.add_trace(go.Scatter(
+            x=df_eerr["Mes"], y=df_eerr["FCF_Acum"],
+            name="FCF Acumulado",
+            mode="lines+markers",
+            line=dict(color=NOMII["primary"], width=2.5),
+            marker=dict(size=5),
+            hovertemplate="<b>%{x}</b><br>Acum: €%{y:,.0f}<extra></extra>",
+        ))
+        fig_fcf.add_hline(y=0, line_dash="dash", line_color="#94a3b8", line_width=1)
+        fig_fcf.update_layout(
+            **CHART_LAYOUT,
+            title=dict(text="Flujo de Caja Libre (FCF)", font=dict(size=14)),
+            height=420,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
+            yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+        )
+        st.plotly_chart(fig_fcf, use_container_width=True)
+
+    # ── ROW 3: Ingreso vs EBITDA bars ────────────────────────────────────
+    st.markdown('<div class="section-title">💶 Ingreso vs EBITDA</div>', unsafe_allow_html=True)
+    fig_ie = go.Figure()
+    fig_ie.add_trace(go.Bar(
+        x=df_eerr["Mes"], y=df_eerr["Ingreso Cobrado"],
+        name="Ingreso", marker=dict(color=NOMII["pale_blue"], cornerradius=4),
+    ))
+    fig_ie.add_trace(go.Bar(
+        x=df_eerr["Mes"], y=df_eerr["EBITDA"],
+        name="EBITDA",
+        marker=dict(
+            color=[NOMII["secondary"] if v >= 0 else "#e74c3c" for v in df_eerr["EBITDA"]],
+            cornerradius=4,
+        ),
+    ))
+    fig_ie.update_layout(
+        **CHART_LAYOUT,
+        title=dict(text="Ingreso Cobrado vs EBITDA por Mes", font=dict(size=14)),
+        barmode="group", height=400,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
+        yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+        xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+    )
+    st.plotly_chart(fig_ie, use_container_width=True)
+
+    # ── Financial Table ─────────────────────────────────────────────────
+    st.markdown('<div class="section-title">📋 Tabla Estado de Resultados</div>', unsafe_allow_html=True)
+
+    display_eerr = df_eerr[["Mes", "Ingreso Cobrado", "COR", "Margen Bruto", "% Margen",
+                             "OPEX Total", "EBITDA", "% EBITDA", "CAPEX", "FCF"]].copy()
+    st.dataframe(
+        display_eerr,
+        use_container_width=True,
+        height=450,
+        column_config={
+            "Ingreso Cobrado": st.column_config.NumberColumn(format="€%.0f"),
+            "COR": st.column_config.NumberColumn(format="€%.0f"),
+            "Margen Bruto": st.column_config.NumberColumn(format="€%.0f"),
+            "% Margen": st.column_config.NumberColumn(format="%.1f%%"),
+            "OPEX Total": st.column_config.NumberColumn(format="€%.0f"),
+            "EBITDA": st.column_config.NumberColumn(format="€%.0f"),
+            "% EBITDA": st.column_config.NumberColumn(format="%.1f%%"),
+            "CAPEX": st.column_config.NumberColumn(format="€%.0f"),
+            "FCF": st.column_config.NumberColumn(format="€%.0f"),
+        },
+    )
 
 # ─── FOOTER ─────────────────────────────────────────────────────────────────
 st.markdown("---")

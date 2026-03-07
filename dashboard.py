@@ -220,7 +220,10 @@ def load_data():
     if sharepoint_url:
         try:
             # Convertir link de SharePoint a URL de descarga directa
-            download_url = sharepoint_url.replace("?e=", "?download=1&e=")
+            if "?" in sharepoint_url:
+                download_url = sharepoint_url + "&download=1"
+            else:
+                download_url = sharepoint_url + "?download=1"
             response = requests.get(download_url, timeout=30)
             response.raise_for_status()
             df = pd.read_excel(

@@ -210,13 +210,39 @@ CHART_LAYOUT = dict(
 
 
 # ─── LOAD DATA ──────────────────────────────────────────────────────────────
-@st.cache_data
+@st.cache_data(ttl=3600)  # Refresca los datos cada hora
 def load_data():
-    df = pd.read_excel(
-        "Maestro Pagos NOMII 07-03-2026.xlsx",
-        sheet_name="SALIDAS",
-        engine="openpyxl",
-    )
+    import requests
+    from io import BytesIO
+
+    sharepoint_url = st.secrets.get("sharepoint", {}).get("url", "")
+
+    if sharepoint_url:
+        try:
+            # Convertir link de SharePoint a URL de descarga directa
+            download_url = sharepoint_url.replace("?e=", "?download=1&e=")
+            response = requests.get(download_url, timeout=30)
+            response.raise_for_status()
+            df = pd.read_excel(
+                BytesIO(response.content),
+                sheet_name="SALIDAS",
+                engine="openpyxl",
+            )
+            st.sidebar.success("📡 Datos cargados desde SharePoint")
+        except Exception as e:
+            st.sidebar.warning(f"⚠️ Error SharePoint, usando archivo local: {e}")
+            df = pd.read_excel(
+                "Maestro Pagos NOMII 07-03-2026.xlsx",
+                sheet_name="SALIDAS",
+                engine="openpyxl",
+            )
+    else:
+        df = pd.read_excel(
+            "Maestro Pagos NOMII 07-03-2026.xlsx",
+            sheet_name="SALIDAS",
+            engine="openpyxl",
+        )
+
     df["Date"] = pd.to_datetime(df["Date"])
     df["Abs_Amount"] = df["Amount in EUR"].abs()
     df["Year"] = df["Date"].dt.year

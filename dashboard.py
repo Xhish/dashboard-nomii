@@ -1503,8 +1503,18 @@ with tab_eerr:
     ce1, ce2 = st.columns(2)
 
     with ce1:
-        # Waterfall chart for latest month
-        latest = df_eerr.iloc[-1] if len(df_eerr) > 0 else None
+        # Waterfall chart for latest month (find last month with actual data)
+        latest = None
+        for i in range(len(df_eerr) - 1, -1, -1):
+            row = df_eerr.iloc[i]
+            if row["Ingreso Cobrado"] != 0 or row["OPEX Total"] != 0:
+                latest = row
+                break
+        
+        # Fallback to last row if all are zero
+        if latest is None and len(df_eerr) > 0:
+            latest = df_eerr.iloc[-1]
+
         if latest is not None:
             wf_labels = ["Ingreso", "COR", "Margen Bruto", "OPEX", "EBITDA", "CAPEX", "FCF"]
             wf_values = [

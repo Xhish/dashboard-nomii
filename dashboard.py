@@ -174,6 +174,33 @@ header {visibility: hidden;}
     border-radius: 12px;
     overflow: hidden;
 }
+
+/* Multiselect tags — NOMII colors */
+span[data-baseweb="tag"] {
+    background-color: #003366 !important;
+    color: white !important;
+    border-radius: 6px !important;
+}
+span[data-baseweb="tag"] span[role="presentation"] {
+    color: white !important;
+}
+
+/* Buttons and interactive elements */
+.stButton > button {
+    background-color: #003366;
+    color: white;
+    border: none;
+    border-radius: 8px;
+}
+.stButton > button:hover {
+    background-color: #20C6B6;
+    color: white;
+}
+
+/* Slider and checkbox accents */
+.stSlider > div > div > div[role="slider"] {
+    background-color: #20C6B6 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 

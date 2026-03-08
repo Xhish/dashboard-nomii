@@ -207,8 +207,8 @@ st.markdown(f"""
 html, body, [class*="css"] {{ font-family: 'DM Sans', sans-serif; }}
 .block-container {{ padding-top: 1.5rem; padding-bottom: 1rem; }}
 
-/* Theme background */
-.stApp {{ background-color: {T['bg']} !important; color: {T['text']} !important; }}
+/* Theme background — color sin !important para no manchar popovers externos */
+.stApp {{ background-color: {T['bg']} !important; color: {T['text']}; }}
 
 /* Header */
 .main-header {{
@@ -256,9 +256,9 @@ section[data-testid="stSidebar"] span {{ color: {T['text']} !important; }}
 /* Plotly */
 .stPlotlyChart {{ border-radius: 12px; overflow: hidden; }}
 
-/* Botón toggle modo nocturno: especificidad máxima para superar Emotion CSS */
+/* Botón toggle: triple selector para máxima especificidad sobre Emotion */
+button[kind="secondary"],
 div[data-testid="stButton"] > button,
-div[data-testid="stButton"] > button:not(:hover),
 .stButton > button {{
     background-color: #4B5563 !important;
     color: #ffffff !important;
@@ -268,6 +268,7 @@ div[data-testid="stButton"] > button:not(:hover),
     box-shadow: none !important;
     outline: none !important;
 }}
+button[kind="secondary"]:hover,
 div[data-testid="stButton"] > button:hover,
 .stButton > button:hover {{
     background-color: #ffffff !important;
@@ -275,9 +276,10 @@ div[data-testid="stButton"] > button:hover,
     border: none !important;
     box-shadow: none !important;
 }}
+button[kind="secondary"]:focus,
+button[kind="secondary"]:active,
 div[data-testid="stButton"] > button:focus,
 div[data-testid="stButton"] > button:active,
-div[data-testid="stButton"] > button:focus:not(:active),
 .stButton > button:focus,
 .stButton > button:active,
 .stButton > button:focus:not(:active) {{
@@ -311,29 +313,38 @@ button[data-testid="stSidebarCollapse"],
 
 /* ── EXPANDERS: sin forzar colores, usa el tema nativo ── */
 
-/* ── Opciones del dropdown: targeting explícito BaseWeb ── */
-[data-baseweb="popover"] ul,
+/* ── Dropdown: alta especificidad para superar Emotion ── */
+div[data-baseweb="popover"] ul,
+div[data-baseweb="popover"] [data-baseweb="menu"],
 ul[data-baseweb="menu"],
 [data-baseweb="menu"] {{
-    background-color: {'#0D1117' if dark else T['card_bg']} !important;
+    background-color: {'#161B22' if dark else T['card_bg']} !important;
     border: 1px solid {'#30363D' if dark else T['card_border']} !important;
 }}
+div[data-baseweb="popover"] [data-baseweb="option"],
 [data-baseweb="option"] {{
-    background-color: {'#0D1117' if dark else T['card_bg']} !important;
-    color: {'#E6EDF3' if dark else T['text']} !important;
+    background-color: {'#161B22' if dark else T['card_bg']} !important;
+    color: {'#FFFFFF' if dark else T['text']} !important;
 }}
-/* Herencia a todos los hijos del option */
+/* Nivel más profundo: cubre cualquier span interno */
+div[data-baseweb="popover"] [data-baseweb="option"] *,
 [data-baseweb="option"] * {{
-    color: inherit !important;
+    color: {'#FFFFFF' if dark else T['text']} !important;
+    -webkit-text-fill-color: {'#FFFFFF' if dark else T['text']} !important;
 }}
+div[data-baseweb="popover"] [data-baseweb="option"]:hover,
+div[data-baseweb="popover"] [data-baseweb="option"][aria-selected="true"],
 [data-baseweb="option"]:hover,
 [data-baseweb="option"][aria-selected="true"] {{
     background-color: #1C3D5A !important;
     color: #20C6B6 !important;
 }}
+div[data-baseweb="popover"] [data-baseweb="option"]:hover *,
+div[data-baseweb="popover"] [data-baseweb="option"][aria-selected="true"] *,
 [data-baseweb="option"]:hover *,
 [data-baseweb="option"][aria-selected="true"] * {{
-    color: inherit !important;
+    color: #20C6B6 !important;
+    -webkit-text-fill-color: #20C6B6 !important;
 }}
 /* Modo oscuro: mantener fondo y texto del expander al expandir */
 {'/* dark expander */ .stExpander { background-color: #161B22 !important; border-color: #30363D !important; } .streamlit-expanderHeader, .stExpander [data-testid="stExpanderHeader"], .stExpander summary { background-color: #161B22 !important; color: #E6EDF3 !important; } .streamlit-expanderContent, .stExpander [data-testid="stExpanderDetails"] { background-color: #161B22 !important; }' if dark else ''}

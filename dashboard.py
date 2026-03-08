@@ -951,37 +951,55 @@ with tab_ingresos:
 
     with ci3:
         if "COHORTE INGRESO" in df_ing.columns:
-            coh_data = (
+            # Primero, obtener los ingresos por cohorte y periodo (mes)
+            coh_trend = df_ing.groupby(["Year_Month", "COHORTE INGRESO"])["Ingreso_Abs"].sum().reset_index()
+            
+            # Para no tener demasiadas capas (son muchas cohortes), filtramos a las 12 mayores
+            top_cohortes = (
                 df_ing.groupby("COHORTE INGRESO")["Ingreso_Abs"]
                 .sum()
-                .sort_values(ascending=False)
-                .head(12)
-                .sort_values()
-                .reset_index()
+                .nlargest(12)
+                .index
             )
-            fig_coh = go.Figure(
-                go.Bar(
-                    y=coh_data["COHORTE INGRESO"],
-                    x=coh_data["Ingreso_Abs"],
-                    orientation="h",
-                    marker=dict(
-                        color=coh_data["Ingreso_Abs"],
-                        colorscale=[[0, NOMII["pale_blue"]], [0.5, NOMII["secondary"]], [1, NOMII["primary"]]],
-                        cornerradius=4,
-                    ),
-                    hovertemplate="<b>%{y}</b><br>€%{x:,.0f}<extra></extra>",
-                    text=[f"€{v:,.0f}" for v in coh_data["Ingreso_Abs"]],
-                    textposition="outside",
-                    textfont=dict(size=10),
-                )
-            )
+            coh_trend = coh_trend[coh_trend["COHORTE INGRESO"].isin(top_cohortes)]
+            
+            # Crear figura de área apilada (Layer Cake)
+            fig_coh = go.Figure()
+            
+            colors = PALETTE[:len(top_cohortes)]
+            
+            # Formatear el nombre de la cohorte para display
+            def format_cohorte(c):
+                if isinstance(c, pd.Timestamp):
+                    return c.strftime('%b %Y')
+                return str(c).replace(" 00:00:00", "")
+
+            # Ordenar cohortes: Invertimos para que las más grandes/antiguas tiendan a quedar en la base
+            sorted_cohortes = list(top_cohortes)[::-1] 
+
+            for idx, cohorte in enumerate(sorted_cohortes):
+                df_c = coh_trend[coh_trend["COHORTE INGRESO"] == cohorte].sort_values("Year_Month")
+                cohorte_name = format_cohorte(cohorte)
+                
+                fig_coh.add_trace(go.Scatter(
+                    x=df_c["Year_Month"],
+                    y=df_c["Ingreso_Abs"],
+                    mode="lines",
+                    stackgroup="one", # Esto crea el efecto Layer Cake
+                    name=cohorte_name,
+                    line=dict(width=0, color=colors[idx % len(colors)]),
+                    hovertemplate=f"<b>Cohorte {cohorte_name}</b><br>Mes: %{{x}}<br>Ingreso: €%{{y:,.0f}}<extra></extra>"
+                ))
+
             fig_coh.update_layout(
                 **{k: v for k, v in CHART_LAYOUT.items() if k != "margin"},
-                title=dict(text="Top 12 Cohortes por Ingreso", font=dict(size=14)),
+                title=dict(text="Evolución Ingresos por Cohorte (Top 12)", font=dict(size=14)),
                 height=420,
-                xaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
-                yaxis=dict(tickfont=dict(size=10)),
-                margin=dict(l=120, r=80, t=40, b=40),
+                xaxis=dict(gridcolor="#f1f5f9", type="category", tickangle=-45),
+                yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f", tickfont=dict(size=10)),
+                margin=dict(l=40, r=20, t=40, b=40),
+                showlegend=True,
+                legend=dict(orientation="h", yanchor="bottom", y=-0.5, xanchor="center", x=0.5, font=dict(size=10))
             )
             st.plotly_chart(fig_coh, use_container_width=True)
         else:

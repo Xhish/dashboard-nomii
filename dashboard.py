@@ -22,23 +22,64 @@ def check_password():
 
     def login_form():
         """Display the login form."""
-        st.markdown(
-            """
-            <div style="display:flex; justify-content:center; align-items:center; min-height:60vh;">
-                <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px;
-                     padding:2.5rem; max-width:400px; width:100%; box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-                    <h2 style="text-align:center; color:#0f172a; margin-bottom:0.3rem;">🔐 NOMII Dashboard</h2>
-                    <p style="text-align:center; color:#64748b; font-size:0.9rem; margin-bottom:1.5rem;">
-                        Ingresa tus credenciales para acceder</p>
-                </div>
+        st.markdown("""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+        .block-container { padding-top: 3rem !important; }
+        [data-testid="stForm"] {
+            background: #ffffff;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 20px !important;
+            padding: 1.8rem 1.5rem 1.5rem !important;
+            box-shadow: 0 8px 32px rgba(0,51,102,0.10) !important;
+        }
+        [data-testid="stForm"] .stTextInput input {
+            border-radius: 10px !important;
+            border: 1.5px solid #cbd5e1 !important;
+            background: #f8fafc !important;
+            font-size: 0.88rem !important;
+            padding: 0.5rem 0.9rem !important;
+            color: #1e293b !important;
+        }
+        [data-testid="stForm"] .stTextInput input:focus {
+            border-color: #003366 !important;
+            box-shadow: 0 0 0 3px rgba(0,51,102,0.08) !important;
+            background: #fff !important;
+        }
+        [data-testid="stForm"] .stFormSubmitButton > button {
+            background: linear-gradient(135deg, #003366 0%, #20C6B6 100%) !important;
+            color: white !important;
+            border-radius: 10px !important;
+            font-weight: 600 !important;
+            font-size: 0.9rem !important;
+            width: 100% !important;
+            padding: 0.55rem !important;
+            margin-top: 0.4rem !important;
+            border: none !important;
+            letter-spacing: 0.3px !important;
+        }
+        [data-testid="stForm"] .stFormSubmitButton > button:hover {
+            opacity: 0.9 !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+        _, col, _ = st.columns([1.8, 1, 1.8])
+        with col:
+            st.markdown("""
+            <div style="text-align:center; margin-bottom:1.4rem; font-family:'DM Sans',sans-serif;">
+                <div style="display:inline-flex; width:54px; height:54px;
+                     background:linear-gradient(135deg,#003366,#20C6B6);
+                     border-radius:16px; align-items:center; justify-content:center;
+                     font-size:1.5rem; margin-bottom:0.75rem; box-shadow:0 4px 16px rgba(0,51,102,0.2);">🔐</div>
+                <div style="color:#003366; font-size:1.25rem; font-weight:700; line-height:1.2;">NOMII Dashboard</div>
+                <div style="color:#94a3b8; font-size:0.78rem; margin-top:0.25rem;">Ingresa tus credenciales para acceder</div>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        with st.form("credentials"):
-            st.text_input("Usuario", key="username")
-            st.text_input("Contraseña", type="password", key="password")
-            st.form_submit_button("Iniciar sesión", on_click=password_entered)
+            """, unsafe_allow_html=True)
+            with st.form("credentials"):
+                st.text_input("Usuario", key="username", placeholder="usuario")
+                st.text_input("Contraseña", type="password", key="password", placeholder="••••••••")
+                st.form_submit_button("Iniciar sesión", use_container_width=True, on_click=password_entered)
 
     def password_entered():
         """Check whether a password entered by the user is correct."""

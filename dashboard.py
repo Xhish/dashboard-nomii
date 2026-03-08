@@ -183,19 +183,20 @@ button[data-testid="stSidebarCollapse"],
 
 /* ── EXPANDERS: sin forzar colores, usa el tema nativo ── */
 
-/* Opciones del dropdown: fondo oscuro NOMII, texto blanco siempre */
+/* Opciones del dropdown: paleta NOMII adaptada al tema */
 [data-baseweb="popover"] ul,
 ul[data-baseweb="menu"],
 [data-baseweb="menu"] {{
-    background-color: #002244 !important;
+    background-color: {T['card_bg']};
+    border: 1px solid {T['card_border']};
 }}
 [data-baseweb="option"] {{
-    background-color: #002244 !important;
-    color: #f8fafc !important;
+    background-color: {T['card_bg']};
+    color: {T['text']};
 }}
 [data-baseweb="option"]:hover, [data-baseweb="option"][aria-selected="true"] {{
-    background-color: #003d7a !important;
-    color: #20C6B6 !important;
+    background-color: {'#1C3D5A' if dark else '#B3D9EA'};
+    color: {'#20C6B6' if dark else '#003366'};
 }}
 /* Modo oscuro: mantener fondo y texto del expander al expandir */
 {'/* dark expander */ .stExpander { background-color: #161B22 !important; border-color: #30363D !important; } .streamlit-expanderHeader, .stExpander [data-testid="stExpanderHeader"], .stExpander summary { background-color: #161B22 !important; color: #E6EDF3 !important; } .streamlit-expanderContent, .stExpander [data-testid="stExpanderDetails"] { background-color: #161B22 !important; }' if dark else ''}

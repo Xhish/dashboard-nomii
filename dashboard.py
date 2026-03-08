@@ -635,7 +635,7 @@ with hdr_col1:
         f"""
         <div class="main-header">
             <div style="display: flex; align-items: center; color: #f8fafc; font-size: 1.7rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; font-family: 'DM Sans', sans-serif;">
-                {icon_html} NOMII<span style="color: #20C6B6;"> · </span>Dashboard</div>
+                {icon_html} NOMII<span style="color: #20C6B6; margin: 0 0.5rem;"> · </span>Finance Dashboard</div>
             <div style="color: #B3D9EA; font-size: 0.88rem; margin: 0.3rem 0 0 0; font-family: 'DM Sans', sans-serif;">
                 {hdr_start.strftime('%d/%m/%Y')} → {hdr_end.strftime('%d/%m/%Y')}</div>
         </div>

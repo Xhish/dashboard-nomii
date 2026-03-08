@@ -102,7 +102,7 @@ def check_password():
 
         /* ── Botón ── */
         [data-testid="stForm"] .stFormSubmitButton > button {{
-            background: linear-gradient(135deg, #003366 0%, #20C6B6 100%) !important;
+            background: linear-gradient(135deg, #003B6D 0%, #71C0D3 100%) !important;
             color: white !important;
             border: none !important;
             border-radius: 10px !important;
@@ -123,13 +123,18 @@ def check_password():
 
         _, col, _ = st.columns([1.8, 1, 1.8])
         with col:
+            logo_path = "logo_nomii.png"
+            logo_b64 = ""
+            import os, base64
+            if os.path.exists(logo_path):
+                with open(logo_path, "rb") as f:
+                    logo_b64 = base64.b64encode(f.read()).decode()
+            
+            logo_html = f'<img src="data:image/png;base64,{logo_b64}" style="width:160px; margin-bottom:0.5rem;">' if logo_b64 else '🔐'
+
             st.markdown(f"""
             <div style="text-align:center; margin-bottom:1.4rem; font-family:'DM Sans',sans-serif;">
-                <div style="display:inline-flex; width:54px; height:54px;
-                     background:linear-gradient(135deg,#003366,#20C6B6);
-                     border-radius:16px; align-items:center; justify-content:center;
-                     font-size:1.5rem; margin-bottom:0.75rem;
-                     box-shadow:0 4px 16px rgba(0,51,102,0.25);">🔐</div>
+                {logo_html}
                 <div style="color:{color_title}; font-size:1.25rem; font-weight:700;
                      line-height:1.2; font-family:'DM Sans',sans-serif;">NOMII Dashboard</div>
                 <div style="color:{color_sub}; font-size:0.78rem; margin-top:0.25rem;

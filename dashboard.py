@@ -1462,7 +1462,7 @@ with tab_kpis:
     .exec-value.red {{ color: {'#FF6B6B' if dark else '#e74c3c'}; }}
     .exec-value.green {{ color: {'#3BC97C' if dark else '#0a8f5f'}; }}
     .exec-sub {{ font-size: 0.75rem; color: {T['text2']}; margin-top: 0.2rem; }}
-    .exec-section {{ font-size: 0.9rem; font-weight: 700; color: {T['heading']}; margin: 1.5rem 0 0.6rem;
+    .exec-section {{ font-size: 0.9rem; font-weight: 700; color: {NOMII['secondary']}; margin: 1.5rem 0 0.6rem;
                      border-bottom: 2px solid {T['section_border']}; padding-bottom: 0.3rem; }}
     </style>
 

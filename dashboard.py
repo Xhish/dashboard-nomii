@@ -256,9 +256,28 @@ section[data-testid="stSidebar"] span {{ color: {T['text']} !important; }}
 /* Plotly */
 .stPlotlyChart {{ border-radius: 12px; overflow: hidden; }}
 
-/* Buttons */
-.stButton > button {{ background-color: {'#ffffff' if dark else '#4B5563'} !important; color: {'#003366' if dark else 'white'} !important; border: none !important; border-radius: 8px !important; }}
-.stButton > button:hover {{ background-color: #20C6B6 !important; color: white !important; }}
+/* Botón toggle modo nocturno: reposo gris oscuro, hover inverso blanco */
+.stButton > button {{
+    background-color: #4B5563 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: none !important;
+}}
+.stButton > button:hover {{
+    background-color: #ffffff !important;
+    color: #003366 !important;
+    box-shadow: none !important;
+}}
+.stButton > button:focus,
+.stButton > button:active,
+.stButton > button:focus:not(:active) {{
+    background-color: #4B5563 !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+    outline: none !important;
+}}
 
 /* Slider */
 .stSlider > div > div > div[role="slider"] {{ background-color: #20C6B6 !important; }}

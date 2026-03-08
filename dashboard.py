@@ -383,59 +383,68 @@ def load_cohortes():
 df_calendario = load_calendario()
 df_clientes = load_resumen_clientes()
 df_cohortes = load_cohortes()
-with st.sidebar:
-    # ── Dark Mode Toggle ─────────────────────────────────────────────
+
+# ─── Defaults de fecha (mes actual) ─────────────────────────────────────────
+from datetime import date
+import calendar
+min_date = df_raw["Date"].min().date()
+max_date = df_raw["Date"].max().date()
+today = date.today()
+default_start = max(date(today.year, today.month, 1), min_date)
+last_day = calendar.monthrange(today.year, today.month)[1]
+default_end = min(date(today.year, today.month, last_day), max_date)
+
+# ─── HEADER ─────────────────────────────────────────────────────────────────
+# Dark mode toggle + Header en la misma fila
+hdr_col1, hdr_col2 = st.columns([9, 1])
+with hdr_col1:
+    st.markdown(
+        f"""
+        <div class="main-header">
+            <h1>NOMII<span class="accent-dot"> · </span>Finance Dashboard</h1>
+            <p>{default_start.strftime('%d %b %Y')} → {default_end.strftime('%d %b %Y')}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+with hdr_col2:
     def toggle_dark():
         st.session_state.dark_mode = not st.session_state.dark_mode
-    
-    dm_label = "☀️ Modo Claro" if dark else "🌙 Modo Nocturno"
-    st.button(dm_label, on_click=toggle_dark, use_container_width=True)
-    st.markdown("---")
-    st.markdown("## 🔎 Filtros")
+    dm_icon = "☀️" if dark else "🌙"
+    st.button(dm_icon, on_click=toggle_dark, help="Activar/Desactivar Modo Nocturno")
 
-    st.markdown("### Período")
-    min_date = df_raw["Date"].min().date()
-    max_date = df_raw["Date"].max().date()
-    # CAMBIO 2: Filtros por defecto al mes actual
-    from datetime import date
-    import calendar
-    today = date.today()
-    default_start = date(today.year, today.month, 1)
-    last_day = calendar.monthrange(today.year, today.month)[1]
-    default_end = date(today.year, today.month, last_day)
-    # Asegurar que los defaults estén dentro del rango de datos
-    default_start = max(default_start, min_date)
-    default_end = min(default_end, max_date)
-    date_range = st.date_input(
-        "Rango de fechas",
-        value=(default_start, default_end),
-        min_value=min_date,
-        max_value=max_date,
-    )
+# ─── FILTROS (en área principal, siempre visibles) ──────────────────────────
+with st.expander("🔎 **Filtros** — clic para expandir", expanded=False):
+    f_col1, f_col2 = st.columns(2)
+    with f_col1:
+        date_range = st.date_input(
+            "📅 Rango de fechas",
+            value=(default_start, default_end),
+            min_value=min_date,
+            max_value=max_date,
+        )
+    with f_col2:
+        all_cats = sorted(df_raw["Category"].dropna().unique())
+        sel_cats = st.multiselect("📂 Categoría", all_cats, default=all_cats)
 
-    st.markdown("### Categoría")
-    all_cats = sorted(df_raw["Category"].dropna().unique())
-    sel_cats = st.multiselect("Category", all_cats, default=all_cats)
+    f_col3, f_col4, f_col5 = st.columns(3)
+    with f_col3:
+        all_deps = sorted(df_raw["Department"].dropna().unique())
+        sel_deps = st.multiselect("🏢 Departamento", all_deps, default=all_deps)
+    with f_col4:
+        all_acct = sorted(df_raw["Accounting Type"].dropna().unique())
+        sel_acct = st.multiselect("📋 Tipo Contable", all_acct, default=all_acct)
+    with f_col5:
+        all_bfn = sorted(df_raw["Business Function"].dropna().unique())
+        sel_bfn = st.multiselect("⚙️ Función de Negocio", all_bfn, default=all_bfn)
 
-    st.markdown("### Departamento")
-    all_deps = sorted(df_raw["Department"].dropna().unique())
-    sel_deps = st.multiselect("Department", all_deps, default=all_deps)
-
-    st.markdown("### Tipo Contable")
-    all_acct = sorted(df_raw["Accounting Type"].dropna().unique())
-    sel_acct = st.multiselect("Accounting Type", all_acct, default=all_acct)
-
-    st.markdown("### Función de Negocio")
-    all_bfn = sorted(df_raw["Business Function"].dropna().unique())
-    sel_bfn = st.multiselect("Business Function", all_bfn, default=all_bfn)
-
-    st.markdown("### Facturación")
-    all_fac = sorted(df_raw["Facturacion"].dropna().unique())
-    sel_fac = st.multiselect("Facturación", all_fac, default=all_fac)
-
-    st.markdown("### Comportamiento del Costo")
-    all_cb = sorted(df_raw["Cost Behavior"].dropna().unique())
-    sel_cb = st.multiselect("Cost Behavior", all_cb, default=all_cb)
+    f_col6, f_col7 = st.columns(2)
+    with f_col6:
+        all_fac = sorted(df_raw["Facturacion"].dropna().unique())
+        sel_fac = st.multiselect("🧾 Facturación", all_fac, default=all_fac)
+    with f_col7:
+        all_cb = sorted(df_raw["Cost Behavior"].dropna().unique())
+        sel_cb = st.multiselect("📊 Comportamiento del Costo", all_cb, default=all_cb)
 
 # ─── APPLY FILTERS ──────────────────────────────────────────────────────────
 if isinstance(date_range, tuple) and len(date_range) == 2:
@@ -453,17 +462,6 @@ df = df_raw[
     & (df_raw["Facturacion"].isin(sel_fac))
     & (df_raw["Cost Behavior"].isin(sel_cb))
 ].copy()
-
-# ─── HEADER ─────────────────────────────────────────────────────────────────
-st.markdown(
-    f"""
-    <div class="main-header">
-        <h1>NOMII<span class="accent-dot"> · </span>Finance Dashboard</h1>
-        <p>{d_start.strftime('%d %b %Y')} → {d_end.strftime('%d %b %Y')}</p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
 
 # ─── PAGE TABS ──────────────────────────────────────────────────────────────
 tab_kpis, tab_eerr, tab_ingresos, tab_gastos = st.tabs(["📊 KPIs Ejecutivos", "📑 Estado de Resultados", "💰 Ingresos", "💸 Gastos"])

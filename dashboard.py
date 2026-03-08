@@ -68,18 +68,35 @@ def check_password():
 if not check_password():
     st.stop()
 
-# ─── THEME COLORS (modo claro fijo) ─────────────────────────────────────────
-dark = False
-T = {
-    "bg": "#FFFFFF", "bg2": "#F9F9F9", "card_bg": "#FFFFFF",
-    "card_border": "#B3D9EA", "text": "#333333", "text2": "#4D7EA8",
-    "heading": "#003366", "sidebar_bg": "#F9F9F9", "sidebar_border": "#B3D9EA",
-    "card_highlight_bg": "linear-gradient(135deg, #f0f7ff 0%, #e8f4f8 100%)",
-    "card_highlight_border": "#003366", "kpi_value": "#003366",
-    "label_color": "#4D7EA8", "grid_color": "#f1f5f9",
-    "section_border": "#20C6B6", "tag_bg": "#003366",
-    "toggle_bg": "rgba(255,255,255,0.95)", "toggle_border": "#003366",
-}
+# ─── DARK MODE STATE ────────────────────────────────────────────────────────
+if "dark_mode" not in st.session_state:
+    st.session_state.dark_mode = False
+
+dark = st.session_state.dark_mode
+
+# ─── THEME COLORS ───────────────────────────────────────────────────────────
+if dark:
+    T = {
+        "bg": "#0E1117", "bg2": "#161B22", "card_bg": "#1C2128",
+        "card_border": "#30363D", "text": "#E6EDF3", "text2": "#8B949E",
+        "heading": "#58A6FF", "sidebar_bg": "#161B22", "sidebar_border": "#30363D",
+        "card_highlight_bg": "linear-gradient(135deg, #0d1f3c 0%, #0e2a40 100%)",
+        "card_highlight_border": "#58A6FF", "kpi_value": "#E6EDF3",
+        "label_color": "#8B949E", "grid_color": "#21262D",
+        "section_border": "#20C6B6", "tag_bg": "#1C3D5A",
+        "toggle_bg": "rgba(30,35,45,0.95)", "toggle_border": "#58A6FF",
+    }
+else:
+    T = {
+        "bg": "#FFFFFF", "bg2": "#F9F9F9", "card_bg": "#FFFFFF",
+        "card_border": "#B3D9EA", "text": "#333333", "text2": "#4D7EA8",
+        "heading": "#003366", "sidebar_bg": "#F9F9F9", "sidebar_border": "#B3D9EA",
+        "card_highlight_bg": "linear-gradient(135deg, #f0f7ff 0%, #e8f4f8 100%)",
+        "card_highlight_border": "#003366", "kpi_value": "#003366",
+        "label_color": "#4D7EA8", "grid_color": "#f1f5f9",
+        "section_border": "#20C6B6", "tag_bg": "#003366",
+        "toggle_bg": "rgba(255,255,255,0.95)", "toggle_border": "#003366",
+    }
 
 # ─── CUSTOM CSS ─────────────────────────────────────────────────────────────
 st.markdown(f"""
@@ -403,17 +420,24 @@ last_day = calendar.monthrange(today.year, today.month)[1]
 default_end = min(date(today.year, today.month, last_day), max_date)
 
 # ─── HEADER ─────────────────────────────────────────────────────────────────
-st.markdown(
-    f"""
-    <div class="main-header">
-        <div style="color: #f8fafc; font-size: 1.7rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; font-family: 'DM Sans', sans-serif;">
-            NOMII<span style="color: #20C6B6;"> · </span>Finance Dashboard</div>
-        <div style="color: #B3D9EA; font-size: 0.88rem; margin: 0.3rem 0 0 0; font-family: 'DM Sans', sans-serif;">
-            {default_start.strftime('%d/%m/%Y')} → {default_end.strftime('%d/%m/%Y')}</div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+hdr_col1, hdr_col2 = st.columns([9, 1])
+with hdr_col1:
+    st.markdown(
+        f"""
+        <div class="main-header">
+            <div style="color: #f8fafc; font-size: 1.7rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; font-family: 'DM Sans', sans-serif;">
+                NOMII<span style="color: #20C6B6;"> · </span>Finance Dashboard</div>
+            <div style="color: #B3D9EA; font-size: 0.88rem; margin: 0.3rem 0 0 0; font-family: 'DM Sans', sans-serif;">
+                {default_start.strftime('%d/%m/%Y')} → {default_end.strftime('%d/%m/%Y')}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+with hdr_col2:
+    def toggle_dark():
+        st.session_state.dark_mode = not st.session_state.dark_mode
+    dm_icon = "☀️" if dark else "🌙"
+    st.button(dm_icon, on_click=toggle_dark, help="Activar/Desactivar Modo Nocturno")
 
 # ─── FILTROS (en área principal, siempre visibles) ──────────────────────────
 with st.expander("🔎 **Filtros** — clic para expandir", expanded=False):

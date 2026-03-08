@@ -435,7 +435,7 @@ if dark:
     ]
 
 CHART_LAYOUT = dict(
-    font=dict(family="DM Sans", color=T["text"]),
+    font=dict(family="'DM Sans', sans-serif", color=T["text"]),
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     margin=dict(l=40, r=20, t=40, b=40),
@@ -443,7 +443,7 @@ CHART_LAYOUT = dict(
     legend_font_color=T["text"],
     hoverlabel=dict(
         bgcolor="#1C2128" if dark else "#003366",
-        font_size=12, font_family="DM Sans",
+        font_size=12, font_family="'DM Sans', sans-serif",
         font_color="#E6EDF3" if dark else "#f8fafc",
         bordercolor="rgba(0,0,0,0)",
     ),
@@ -1078,7 +1078,7 @@ with tab_gastos:
             hovertemplate="<b>%{y}</b><br>€%{x:,.0f}<extra></extra>",
             text=[f"€{v:,.0f}" for v in top_cp["Abs_Amount"]],
             textposition="outside",
-            textfont=dict(size=10, family="JetBrains Mono", color=T["text"]),
+            textfont=dict(size=10, family="'JetBrains Mono', monospace", color=T["text"]),
         )
     )
     fig_cp.update_layout(

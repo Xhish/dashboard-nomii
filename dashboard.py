@@ -1512,7 +1512,7 @@ with tab_kpis:
         </div>
         <div class="exec-card nomii-blue">
             <div class="exec-label">Margen Bruto</div>
-            <div class="exec-value {'green' if margen_bruto >= 0 else 'red'}">€{margen_bruto:,.0f}</div>
+            <div class="exec-value {'turquoise' if margen_bruto >= 0 else 'red'}">€{margen_bruto:,.0f}</div>
             <div class="exec-sub">{'✅ ' if margen_bruto >= 0 else '⚠️ '}{(margen_bruto / ingreso_cobrado * 100) if ingreso_cobrado else 0:.1f}% s/ ingresos</div>
         </div>
         <div class="exec-card">

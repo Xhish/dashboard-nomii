@@ -206,7 +206,7 @@ else:
 
 # ─── CUSTOM CSS ─────────────────────────────────────────────────────────────
 hide_menu_css = ""
-if st.session_state.get("current_user", "") != "nomii":
+if st.session_state.get("current_user", "") not in ["nomii", "gbravo-admin"]:
     hide_menu_css = "#MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}"
 
 st.markdown(f"""

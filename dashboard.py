@@ -810,6 +810,7 @@ with tab_gastos:
                 hole=0.55,
                 marker=dict(colors=cat_colors),
                 textinfo="percent",
+                insidetextfont=dict(size=11, color="white"),
                 textfont=dict(size=11, color=T["text"]),
                 hovertemplate="<b>%{label}</b><br>€%{value:,.0f}<br>%{percent}<extra></extra>",
             )
@@ -905,6 +906,7 @@ with tab_gastos:
                 hole=0.5,
                 marker=dict(colors=[color_map_cb.get(c, "#94a3b8") for c in cb_data["Cost Behavior"]]),
                 textinfo="label+percent",
+                insidetextfont=dict(size=10, color="white"),
                 textfont=dict(size=10, color=T["text"]),
                 hovertemplate="<b>%{label}</b><br>€%{value:,.0f}<br>%{percent}<extra></extra>",
             )

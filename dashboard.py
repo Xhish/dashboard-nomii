@@ -68,35 +68,18 @@ def check_password():
 if not check_password():
     st.stop()
 
-# ─── DARK MODE STATE ────────────────────────────────────────────────────────
-if "dark_mode" not in st.session_state:
-    st.session_state.dark_mode = False
-
-dark = st.session_state.dark_mode
-
-# ─── THEME COLORS ───────────────────────────────────────────────────────────
-if dark:
-    T = {
-        "bg": "#0E1117", "bg2": "#161B22", "card_bg": "#1C2128",
-        "card_border": "#30363D", "text": "#E6EDF3", "text2": "#8B949E",
-        "heading": "#58A6FF", "sidebar_bg": "#161B22", "sidebar_border": "#30363D",
-        "card_highlight_bg": "linear-gradient(135deg, #0d1f3c 0%, #0e2a40 100%)",
-        "card_highlight_border": "#58A6FF", "kpi_value": "#E6EDF3",
-        "label_color": "#8B949E", "grid_color": "#21262D",
-        "section_border": "#20C6B6", "tag_bg": "#1C3D5A",
-        "toggle_bg": "rgba(30,35,45,0.95)", "toggle_border": "#58A6FF",
-    }
-else:
-    T = {
-        "bg": "#FFFFFF", "bg2": "#F9F9F9", "card_bg": "#FFFFFF",
-        "card_border": "#B3D9EA", "text": "#333333", "text2": "#4D7EA8",
-        "heading": "#003366", "sidebar_bg": "#F9F9F9", "sidebar_border": "#B3D9EA",
-        "card_highlight_bg": "linear-gradient(135deg, #f0f7ff 0%, #e8f4f8 100%)",
-        "card_highlight_border": "#003366", "kpi_value": "#003366",
-        "label_color": "#4D7EA8", "grid_color": "#f1f5f9",
-        "section_border": "#20C6B6", "tag_bg": "#003366",
-        "toggle_bg": "rgba(255,255,255,0.95)", "toggle_border": "#003366",
-    }
+# ─── THEME COLORS (modo claro fijo) ─────────────────────────────────────────
+dark = False
+T = {
+    "bg": "#FFFFFF", "bg2": "#F9F9F9", "card_bg": "#FFFFFF",
+    "card_border": "#B3D9EA", "text": "#333333", "text2": "#4D7EA8",
+    "heading": "#003366", "sidebar_bg": "#F9F9F9", "sidebar_border": "#B3D9EA",
+    "card_highlight_bg": "linear-gradient(135deg, #f0f7ff 0%, #e8f4f8 100%)",
+    "card_highlight_border": "#003366", "kpi_value": "#003366",
+    "label_color": "#4D7EA8", "grid_color": "#f1f5f9",
+    "section_border": "#20C6B6", "tag_bg": "#003366",
+    "toggle_bg": "rgba(255,255,255,0.95)", "toggle_border": "#003366",
+}
 
 # ─── CUSTOM CSS ─────────────────────────────────────────────────────────────
 st.markdown(f"""
@@ -115,9 +98,9 @@ html, body, [class*="css"] {{ font-family: 'DM Sans', sans-serif; }}
     padding: 1.8rem 2.2rem; border-radius: 16px; margin-bottom: 1.5rem;
     border: 1px solid rgba(32,198,182,0.2); box-shadow: 0 4px 24px rgba(0,51,102,0.15);
 }}
-.main-header h1 {{ color: #f8fafc; font-size: 1.7rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; }}
-.main-header p {{ color: #B3D9EA; font-size: 0.88rem; margin: 0.3rem 0 0 0; }}
-.accent-dot {{ color: #20C6B6; }}
+.stApp .main-header h1 {{ color: #f8fafc !important; font-size: 1.7rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; }}
+.stApp .main-header p {{ color: #B3D9EA !important; font-size: 0.88rem; margin: 0.3rem 0 0 0; }}
+.stApp .main-header .accent-dot {{ color: #20C6B6 !important; }}
 
 /* KPI Cards */
 .kpi-card {{
@@ -179,7 +162,7 @@ button[data-testid="stSidebarCollapse"],
 
 /* Text & headings */
 .stApp p, .stApp span, .stApp label {{ color: {T['text']}; }}
-.stApp h1, .stApp h2, .stApp h3, .stApp h4 {{ color: {T['heading']} !important; }}
+.stApp h2, .stApp h3, .stApp h4 {{ color: {T['heading']}; }}
 
 /* Tabs */
 .stTabs [data-baseweb="tab"] {{ color: {T['text2']}; }}
@@ -191,6 +174,23 @@ button[data-testid="stSidebarCollapse"],
     background-color: {T['card_bg']} !important; color: {T['text']} !important;
     border-color: {T['card_border']} !important;
 }}
+
+/* Filter section: white/light text for labels in expander */
+.stExpander label, .stExpander .stMarkdown p, .stExpander .stMarkdown span,
+.stExpander .stSelectbox label, .stExpander .stMultiSelect label,
+.stExpander .stDateInput label {{
+    color: {'#E6EDF3' if dark else '#FFFFFF'} !important;
+}}
+.stExpander summary span, .stExpander [data-testid="stExpanderToggleIcon"] {{
+    color: {'#E6EDF3' if dark else '#FFFFFF'} !important;
+}}
+.stExpander {{
+    background: {'rgba(22,27,34,0.6)' if dark else 'rgba(0,51,102,0.8)'};
+    border-radius: 12px; padding: 0.5rem; border: 1px solid {'#30363D' if dark else 'rgba(179,217,234,0.4)'};
+}}
+
+/* Dark mode search bar: dark text for input fields */
+{'div[data-baseweb="select"] input, div[data-baseweb="input"] input, .stMultiSelect input, .stSelectbox input, input[aria-autocomplete="list"], input[type="text"] { color: #003366 !important; background-color: #f8fafc !important; }' if dark else ''}
 
 /* Expanders */
 .streamlit-expanderHeader {{ color: {T['heading']} !important; background-color: {T['card_bg']} !important; }}
@@ -230,6 +230,8 @@ CHART_LAYOUT = dict(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     margin=dict(l=40, r=20, t=40, b=40),
+    title_font_color=T["text"],
+    legend_font_color=T["text"],
     hoverlabel=dict(
         bgcolor="#1C2128" if dark else "#003366",
         font_size=12, font_family="DM Sans",
@@ -281,7 +283,7 @@ def load_data():
     df["Abs_Amount"] = df["Amount in EUR"].abs()
     df["Year"] = df["Date"].dt.year
     df["Month"] = df["Date"].dt.month
-    df["Month_Name"] = df["Date"].dt.strftime("%b %Y")
+    df["Month_Name"] = df["Date"].dt.strftime("%m/%Y")
     df["Year_Month"] = df["Date"].dt.to_period("M").astype(str)
     return df
 
@@ -334,7 +336,7 @@ def load_ingresos():
     df["Year"] = df["FECHA"].dt.year
     df["Month"] = df["FECHA"].dt.month
     df["Year_Month"] = df["FECHA"].dt.to_period("M").astype(str)
-    df["Month_Name"] = df["FECHA"].dt.strftime("%b %Y")
+    df["Month_Name"] = df["FECHA"].dt.strftime("%m/%Y")
     return df
 
 
@@ -384,34 +386,34 @@ df_calendario = load_calendario()
 df_clientes = load_resumen_clientes()
 df_cohortes = load_cohortes()
 
-# ─── Defaults de fecha (mes actual) ─────────────────────────────────────────
+# ─── Defaults de fecha (mes actual + 2 meses anteriores) ────────────────────
 from datetime import date
 import calendar
 min_date = df_raw["Date"].min().date()
 max_date = df_raw["Date"].max().date()
 today = date.today()
-default_start = max(date(today.year, today.month, 1), min_date)
+# 3 months: current + 2 previous
+_m = today.month - 2
+_y = today.year
+if _m <= 0:
+    _m += 12
+    _y -= 1
+default_start = max(date(_y, _m, 1), min_date)
 last_day = calendar.monthrange(today.year, today.month)[1]
 default_end = min(date(today.year, today.month, last_day), max_date)
 
 # ─── HEADER ─────────────────────────────────────────────────────────────────
-# Dark mode toggle + Header en la misma fila
-hdr_col1, hdr_col2 = st.columns([9, 1])
-with hdr_col1:
-    st.markdown(
-        f"""
-        <div class="main-header">
-            <h1>NOMII<span class="accent-dot"> · </span>Finance Dashboard</h1>
-            <p>{default_start.strftime('%d %b %Y')} → {default_end.strftime('%d %b %Y')}</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-with hdr_col2:
-    def toggle_dark():
-        st.session_state.dark_mode = not st.session_state.dark_mode
-    dm_icon = "☀️" if dark else "🌙"
-    st.button(dm_icon, on_click=toggle_dark, help="Activar/Desactivar Modo Nocturno")
+st.markdown(
+    f"""
+    <div class="main-header">
+        <div style="color: #f8fafc; font-size: 1.7rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; font-family: 'DM Sans', sans-serif;">
+            NOMII<span style="color: #20C6B6;"> · </span>Finance Dashboard</div>
+        <div style="color: #B3D9EA; font-size: 0.88rem; margin: 0.3rem 0 0 0; font-family: 'DM Sans', sans-serif;">
+            {default_start.strftime('%d/%m/%Y')} → {default_end.strftime('%d/%m/%Y')}</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 # ─── FILTROS (en área principal, siempre visibles) ──────────────────────────
 with st.expander("🔎 **Filtros** — clic para expandir", expanded=False):
@@ -526,6 +528,7 @@ with tab_gastos:
             .rename(columns={"Year_Month": "Mes", "Abs_Amount": "Gasto"})
             .sort_values("Mes")
         )
+        monthly["Mes"] = monthly["Mes"].str[5:7] + "/" + monthly["Mes"].str[:4]
         monthly["Acumulado"] = monthly["Gasto"].cumsum()
     
         fig_trend = make_subplots(specs=[[{"secondary_y": True}]])
@@ -556,7 +559,7 @@ with tab_gastos:
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
             yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
             yaxis2=dict(gridcolor="rgba(0,0,0,0)", tickformat="€,.0f"),
-            xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=10, color=T["text"])),
         )
         st.plotly_chart(fig_trend, use_container_width=True)
     
@@ -575,7 +578,7 @@ with tab_gastos:
                 hole=0.55,
                 marker=dict(colors=PALETTE),
                 textinfo="percent",
-                textfont=dict(size=11),
+                textfont=dict(size=11, color=T["text"]),
                 hovertemplate="<b>%{label}</b><br>€%{value:,.0f}<br>%{percent}<extra></extra>",
             )
         )
@@ -610,7 +613,7 @@ with tab_gastos:
                 hovertemplate="<b>%{y}</b><br>€%{x:,.0f}<extra></extra>",
                 text=[f"€{v:,.0f}" for v in dept_spend["Abs_Amount"]],
                 textposition="outside",
-                textfont=dict(size=10),
+                textfont=dict(size=10, color=T["text"]),
             )
         )
         fig_dept.update_layout(
@@ -618,7 +621,7 @@ with tab_gastos:
             title=dict(text="Gasto por Departamento", font=dict(size=14)),
             height=420,
             xaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
-            yaxis=dict(tickfont=dict(size=11)),
+            yaxis=dict(tickfont=dict(size=11, color=T["text"])),
         )
         st.plotly_chart(fig_dept, use_container_width=True)
     
@@ -637,12 +640,15 @@ with tab_gastos:
             .reset_index()
             .sort_values("Year_Month")
         )
+        acct_months_ordered = [f"{m[5:7]}/{m[0:4]}" for m in acct_monthly["Year_Month"].unique()]
+        acct_monthly["Year_Month"] = acct_monthly["Year_Month"].str[5:7] + "/" + acct_monthly["Year_Month"].str[:4]
         color_map_acct = {"OPEX": NOMII["primary"], "CAPEX": NOMII["secondary"], "COR": NOMII["accent"]}
         fig_acct = px.bar(
             acct_monthly,
             x="Year_Month", y="Abs_Amount", color="Accounting Type",
             color_discrete_map=color_map_acct,
             labels={"Abs_Amount": "EUR", "Year_Month": "Mes"},
+            category_orders={"Year_Month": acct_months_ordered},
         )
         fig_acct.update_layout(
             **CHART_LAYOUT,
@@ -650,7 +656,7 @@ with tab_gastos:
             height=380,
             barmode="stack",
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=10)),
-            xaxis=dict(tickangle=-45, tickfont=dict(size=9)),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=9, color=T["text"])),
             yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
         )
         fig_acct.update_traces(hovertemplate="<b>%{x}</b><br>€%{y:,.0f}<extra></extra>")
@@ -667,7 +673,7 @@ with tab_gastos:
                 hole=0.5,
                 marker=dict(colors=[color_map_cb.get(c, "#94a3b8") for c in cb_data["Cost Behavior"]]),
                 textinfo="label+percent",
-                textfont=dict(size=10),
+                textfont=dict(size=10, color=T["text"]),
                 hovertemplate="<b>%{label}</b><br>€%{value:,.0f}<br>%{percent}<extra></extra>",
             )
         )
@@ -729,14 +735,14 @@ with tab_gastos:
                 hovertemplate="<b>%{x}</b><br>€%{y:,.0f}<extra></extra>",
                 text=[f"€{v:,.0f}" for v in tri_data["Abs_Amount"]],
                 textposition="outside",
-                textfont=dict(size=10),
+                textfont=dict(size=10, color=T["text"]),
             )
         )
         fig_tri.update_layout(
             **CHART_LAYOUT,
             title=dict(text="Gasto por Trimestre", font=dict(size=14)),
             height=380,
-            xaxis=dict(tickfont=dict(size=11)),
+            xaxis=dict(tickfont=dict(size=11, color=T["text"])),
             yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
         )
         st.plotly_chart(fig_tri, use_container_width=True)
@@ -749,19 +755,22 @@ with tab_gastos:
             .reset_index()
             .sort_values("Year_Month")
         )
+        fac_months_ordered = [f"{m[5:7]}/{m[0:4]}" for m in fac_monthly["Year_Month"].unique()]
+        fac_monthly["Year_Month"] = fac_monthly["Year_Month"].str[5:7] + "/" + fac_monthly["Year_Month"].str[:4]
         color_map_fac = {"GmbH": NOMII["primary"], "SpA": NOMII["secondary"]}
         fig_fac = px.area(
             fac_monthly,
             x="Year_Month", y="Abs_Amount", color="Facturacion",
             color_discrete_map=color_map_fac,
             labels={"Abs_Amount": "EUR", "Year_Month": "Mes"},
+            category_orders={"Year_Month": fac_months_ordered},
         )
         fig_fac.update_layout(
             **CHART_LAYOUT,
             title=dict(text="Gasto por Entidad de Facturación", font=dict(size=14)),
             height=380,
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
-            xaxis=dict(tickangle=-45, tickfont=dict(size=9)),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=9, color=T["text"])),
             yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
         )
         fig_fac.update_traces(hovertemplate="<b>%{x}</b><br>€%{y:,.0f}<extra></extra>")
@@ -790,14 +799,14 @@ with tab_gastos:
             hovertemplate="<b>%{y}</b><br>€%{x:,.0f}<extra></extra>",
             text=[f"€{v:,.0f}" for v in top_cp["Abs_Amount"]],
             textposition="outside",
-            textfont=dict(size=10, family="JetBrains Mono"),
+            textfont=dict(size=10, family="JetBrains Mono", color=T["text"]),
         )
     )
     fig_cp.update_layout(
         **{k: v for k, v in CHART_LAYOUT.items() if k != "margin"},
         height=480,
         xaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
-        yaxis=dict(tickfont=dict(size=11)),
+        yaxis=dict(tickfont=dict(size=11, color=T["text"])),
         margin=dict(l=180, r=80, t=20, b=40),
     )
     st.plotly_chart(fig_cp, use_container_width=True)
@@ -816,7 +825,7 @@ with tab_gastos:
         "Accounting Type", "Business Function", "Facturacion",
     ]
     df_display = df[display_cols].copy()
-    df_display["Date"] = df_display["Date"].dt.strftime("%Y-%m-%d")
+    df_display["Date"] = df_display["Date"].dt.strftime("%d/%m/%Y")
     df_display = df_display.sort_values("Date", ascending=False)
     
     st.dataframe(
@@ -900,6 +909,7 @@ with tab_ingresos:
             .rename(columns={"Year_Month": "Mes", "Ingreso_Abs": "Ingreso"})
             .sort_values("Mes")
         )
+        monthly_ing["Mes"] = monthly_ing["Mes"].str[5:7] + "/" + monthly_ing["Mes"].str[:4]
         monthly_ing["Acumulado"] = monthly_ing["Ingreso"].cumsum()
 
         fig_ing_trend = make_subplots(specs=[[{"secondary_y": True}]])
@@ -930,7 +940,7 @@ with tab_ingresos:
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
             yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
             yaxis2=dict(gridcolor="rgba(0,0,0,0)", tickformat="€,.0f"),
-            xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=10, color=T["text"])),
         )
         st.plotly_chart(fig_ing_trend, use_container_width=True)
 
@@ -949,7 +959,7 @@ with tab_ingresos:
                     hole=0.55,
                     marker=dict(colors=PALETTE),
                     textinfo="percent",
-                    textfont=dict(size=11),
+                    textfont=dict(size=11, color=T["text"]),
                     hovertemplate="<b>%{label}</b><br>€%{value:,.0f}<br>%{percent}<extra></extra>",
                 )
             )
@@ -990,16 +1000,17 @@ with tab_ingresos:
             # Formatear el nombre de la cohorte para display
             def format_cohorte(c):
                 if isinstance(c, pd.Timestamp):
-                    return c.strftime('%b %Y')
+                    return c.strftime('%m/%Y')
                 return str(c).replace(" 00:00:00", "")
 
             # Ordenar cohortes: Invertimos para que las más grandes/antiguas tiendan a quedar en la base
             sorted_cohortes = list(top_cohortes)[::-1] 
 
             for idx, cohorte in enumerate(sorted_cohortes):
-                df_c = coh_trend[coh_trend["COHORTE INGRESO"] == cohorte].sort_values("Year_Month")
+                df_c = coh_trend[coh_trend["COHORTE INGRESO"] == cohorte].sort_values("Year_Month").copy()
+                df_c["Year_Month"] = df_c["Year_Month"].str[5:7] + "/" + df_c["Year_Month"].str[:4]
                 cohorte_name = format_cohorte(cohorte)
-                
+
                 fig_coh.add_trace(go.Scatter(
                     x=df_c["Year_Month"],
                     y=df_c["Ingreso_Abs"],
@@ -1015,7 +1026,7 @@ with tab_ingresos:
                 title=dict(text="Evolución Ingresos por Cohorte (Top 12)", font=dict(size=14)),
                 height=420,
                 xaxis=dict(gridcolor=NOMII["grid_color"], type="category", tickangle=-45),
-                yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f", tickfont=dict(size=10)),
+                yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f", tickfont=dict(size=10, color=T["text"])),
                 margin=dict(l=40, r=20, t=40, b=40),
                 showlegend=True,
                 legend=dict(orientation="h", yanchor="bottom", y=-0.5, xanchor="center", x=0.5, font=dict(size=10))
@@ -1033,6 +1044,7 @@ with tab_ingresos:
                 .rename(columns={"Year_Month": "Mes", "ID CLIENTE": "Clientes"})
                 .sort_values("Mes")
             )
+            clients_monthly["Mes"] = clients_monthly["Mes"].str[5:7] + "/" + clients_monthly["Mes"].str[:4]
             fig_clients = go.Figure(
                 go.Scatter(
                     x=clients_monthly["Mes"],
@@ -1050,7 +1062,7 @@ with tab_ingresos:
                 **CHART_LAYOUT,
                 title=dict(text="Clientes Activos por Mes", font=dict(size=14)),
                 height=420,
-                xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+                xaxis=dict(tickangle=-45, tickfont=dict(size=10, color=T["text"])),
                 yaxis=dict(gridcolor=NOMII["grid_color"]),
             )
             st.plotly_chart(fig_clients, use_container_width=True)
@@ -1063,7 +1075,7 @@ with tab_ingresos:
     ing_cols = [c for c in ["FECHA", "NOMBRE", "ID CLIENTE", "IMPORTE", "CARGO", " INGRESO NETO",
                             "MONEDA", "CL / DE", "COHORTE INGRESO", "COHORTE PAIS"] if c in df_ing.columns]
     df_ing_display = df_ing[ing_cols].copy()
-    df_ing_display["FECHA"] = df_ing_display["FECHA"].dt.strftime("%Y-%m-%d")
+    df_ing_display["FECHA"] = df_ing_display["FECHA"].dt.strftime("%d/%m/%Y")
     df_ing_display = df_ing_display.sort_values("FECHA", ascending=False)
 
     st.dataframe(
@@ -1083,15 +1095,15 @@ with tab_ingresos:
 with tab_kpis:
     # ── Month Selector ──────────────────────────────────────────────────────
     available_months = sorted(df_calendario["FECHA"].dropna().dt.to_period("M").unique())
-    month_labels = [str(m) for m in available_months]
-    # CAMBIO 2: Selector de mes por defecto al mes actual
+    month_labels_internal = [str(m) for m in available_months]  # "YYYY-MM" para uso interno
+    month_labels = [m.strftime("%m/%Y") for m in available_months]  # "MM/YYYY" para mostrar
     current_month_str = datetime.now().strftime("%Y-%m")
-    if current_month_str in month_labels:
-        default_idx = month_labels.index(current_month_str)
+    if current_month_str in month_labels_internal:
+        default_idx = month_labels_internal.index(current_month_str)
     else:
-        default_idx = len(month_labels) - 1 if month_labels else 0
+        default_idx = len(month_labels_internal) - 1 if month_labels_internal else 0
     sel_month_label = st.selectbox("📅 Selecciona el mes", month_labels, index=default_idx)
-    sel_period = pd.Period(sel_month_label, freq="M")
+    sel_period = available_months[month_labels.index(sel_month_label)]
 
     # ── Filter data for selected month ─────────────────────────────────────
     cal_month = df_calendario[df_calendario["FECHA"].dt.to_period("M") == sel_period]
@@ -1238,7 +1250,7 @@ with tab_kpis:
             detail_cols = [c for c in ["NOMBRE", "MONTO", "N° FACTURA", "FECHA", "PAIS", "ESTADO", "NOTA"] if c in atrasadas.columns]
             df_atrasadas_display = atrasadas[detail_cols].copy()
             if "FECHA" in df_atrasadas_display.columns:
-                df_atrasadas_display["FECHA"] = pd.to_datetime(df_atrasadas_display["FECHA"]).dt.strftime("%Y-%m-%d")
+                df_atrasadas_display["FECHA"] = pd.to_datetime(df_atrasadas_display["FECHA"]).dt.strftime("%d/%m/%Y")
             df_atrasadas_display = df_atrasadas_display.sort_values("MONTO", ascending=False)
             st.dataframe(
                 df_atrasadas_display,
@@ -1275,6 +1287,7 @@ with tab_kpis:
         plan_hist["Mes"] = plan_hist["FECHA"].astype(str)
         paid_hist["Mes"] = paid_hist["FECHA"].astype(str)
         merged = plan_hist.merge(paid_hist[["Mes", "Cobrado"]], on="Mes", how="left").fillna(0).sort_values("Mes")
+        merged["Mes"] = merged["Mes"].str[5:7] + "/" + merged["Mes"].str[:4]
 
         fig_plan = go.Figure()
         fig_plan.add_trace(go.Bar(x=merged["Mes"], y=merged["Planificado"], name="Planificado",
@@ -1287,14 +1300,14 @@ with tab_kpis:
             barmode="overlay", height=380,
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
             yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
-            xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=10, color=T["text"])),
         )
         st.plotly_chart(fig_plan, use_container_width=True)
 
     with ck2:
         # Client evolution
         coh_sorted = df_cohortes.dropna(subset=["MES"]).sort_values("MES").copy()
-        coh_sorted["Mes"] = coh_sorted["MES"].dt.strftime("%Y-%m")
+        coh_sorted["Mes"] = coh_sorted["MES"].dt.strftime("%m/%Y")
         if "CANTIDAD CLIENTES ACTIVOS X MES" in coh_sorted.columns:
             fig_cli = go.Figure()
             fig_cli.add_trace(go.Scatter(
@@ -1306,7 +1319,7 @@ with tab_kpis:
                 marker=dict(size=8),
                 text=coh_sorted["CANTIDAD CLIENTES ACTIVOS X MES"].astype(int),
                 textposition="top center",
-                textfont=dict(size=10),
+                textfont=dict(size=10, color=T["text"]),
             ))
             if "NUEVOS CLIENTES TOTAL" in coh_sorted.columns:
                 fig_cli.add_trace(go.Bar(
@@ -1322,7 +1335,7 @@ with tab_kpis:
                 height=380,
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
                 yaxis=dict(gridcolor=NOMII["grid_color"]),
-                xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+                xaxis=dict(tickangle=-45, tickfont=dict(size=10, color=T["text"])),
             )
             st.plotly_chart(fig_cli, use_container_width=True)
 
@@ -1372,7 +1385,7 @@ with tab_eerr:
         fcf = ebitda + capex
 
         eerr_rows.append({
-            "Mes": str(period),
+            "Mes": period.strftime("%m/%Y"),
             "Ingreso Cobrado": ingreso_cobrado,
             "COR": cor,
             "Margen Bruto": margen_bruto,
@@ -1457,7 +1470,7 @@ with tab_eerr:
             totals=dict(marker=dict(color=NOMII["primary"])),
             textposition="outside",
             text=wf_text,
-            textfont=dict(size=10),
+            textfont=dict(size=10, color=T["text"]),
         ))
         fig_wf.update_layout(
             **CHART_LAYOUT,
@@ -1494,7 +1507,7 @@ with tab_eerr:
             height=420,
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
             yaxis=dict(gridcolor=NOMII["grid_color"], ticksuffix="%"),
-            xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=10, color=T["text"])),
         )
         st.plotly_chart(fig_margin, use_container_width=True)
 
@@ -1524,7 +1537,7 @@ with tab_eerr:
             barmode="stack", height=420,
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
             yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
-            xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=10, color=T["text"])),
         )
         st.plotly_chart(fig_opex, use_container_width=True)
 
@@ -1562,7 +1575,7 @@ with tab_eerr:
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
             yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f", title_text="FCF Mensual"),
             yaxis2=dict(gridcolor="rgba(0,0,0,0)", tickformat="€,.0f", title_text="FCF Acumulado"),
-            xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+            xaxis=dict(tickangle=-45, tickfont=dict(size=10, color=T["text"])),
         )
         st.plotly_chart(fig_fcf, use_container_width=True)
 
@@ -1587,7 +1600,7 @@ with tab_eerr:
         barmode="group", height=400,
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
         yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
-        xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
+        xaxis=dict(tickangle=-45, tickfont=dict(size=10, color=T["text"])),
     )
     st.plotly_chart(fig_ie, use_container_width=True)
 
@@ -1621,6 +1634,7 @@ st.markdown("---")
 st.markdown(
     '<p style="text-align:center; color:#94a3b8; font-size:0.78rem;">'
     'NOMII Finance Dashboard · Datos actualizados desde Excel/SharePoint · '
-    f'Generado el {datetime.now().strftime("%d %b %Y %H:%M")}</p>',
+    f'Generado el {datetime.now().strftime("%d/%m/%Y %H:%M")}'
+    '<br>Desarrollado por Giovanny Bravo para NOMII GmbH</p>',
     unsafe_allow_html=True,
 )

@@ -1120,6 +1120,7 @@ with tab_ingresos:
 
     # ── MRR y Churn sincronizados con el último mes DEL RANGO
     if len(monthly_rev) > 0:
+        last_r = monthly_rev.iloc[-1]
         last_month_key = monthly_rev.index[-1]  # "YYYY-MM"
         last_month_display = datetime.strptime(last_month_key, "%Y-%m").strftime("%m/%Y")
         

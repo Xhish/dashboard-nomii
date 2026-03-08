@@ -192,79 +192,40 @@ button[data-testid="stSidebarCollapse"],
     border-color: {T['card_border']} !important;
 }}
 
-/* ── FILTROS: campo de selección → azul oscuro NOMII ── */
+/* ── EXPANDERS: sin forzar colores, usa el tema nativo ── */
+/* Eliminar cualquier override que bloquee el color del expander */
+
+/* Dropdowns de selección: usan colores del tema */
 .stExpander .stSelectbox div[data-baseweb="select"] > div,
 .stExpander .stMultiSelect div[data-baseweb="select"] > div {{
-    background-color: #002244 !important;
-    color: #f8fafc !important;
-    border-color: rgba(32,198,182,0.35) !important;
-}}
-/* Etiquetas y títulos de filtros: fondo gris oscuro NOMII, letra blanca */
-.stExpander label, .stExpander .stMarkdown p, .stExpander .stMarkdown span {{
-    color: #f8fafc !important;
-}}
-.stExpander .stSelectbox label, .stExpander .stMultiSelect label,
-.stExpander .stDateInput label {{
-    background-color: #1a3356 !important;
-    color: #f8fafc !important;
-    padding: 2px 8px !important;
-    border-radius: 4px !important;
-    display: inline-block !important;
-}}
-/* Texto toggle del expander */
-.stExpander summary span, .stExpander [data-testid="stExpanderToggleIcon"] {{
-    color: #f8fafc !important;
-}}
-/* Fondo del expander (filtros y cuotas): azul oscuro siempre */
-.stExpander, .stExpander > details, .stExpander > details[open] {{
-    background: {'rgba(22,27,34,0.85)' if dark else '#002244'} !important;
-    border-radius: 12px; padding: 0.5rem;
-    border: 1px solid {'#30363D' if dark else 'rgba(32,198,182,0.25)'} !important;
-}}
-/* Header del expander: mismo azul oscuro, letras blancas, sin cambio al abrir */
-.streamlit-expanderHeader,
-.stExpander [data-testid="stExpanderHeader"],
-.stExpander summary {{
-    color: #f8fafc !important;
-    background-color: {'rgba(22,27,34,0.85)' if dark else '#002244'} !important;
-    border-radius: 8px !important;
-}}
-/* Contenido interno del expander: mismo fondo */
-.streamlit-expanderContent,
-.stExpander [data-testid="stExpanderDetails"] {{
-    background-color: {'rgba(22,27,34,0.85)' if dark else '#002244'} !important;
-    border-radius: 0 0 8px 8px !important;
+    background-color: {T['card_bg']} !important;
+    color: {T['text']} !important;
+    border-color: {T['card_border']} !important;
 }}
 
-/* Date input dentro de filtros: fondo oscuro, texto blanco en modo claro */
-.stExpander .stDateInput div[data-baseweb="input"] {{
-    background-color: #002244 !important;
-    border-color: rgba(32,198,182,0.35) !important;
-}}
-.stExpander .stDateInput div[data-baseweb="input"] input {{
-    color: #f8fafc !important;
-    -webkit-text-fill-color: #f8fafc !important;
-}}
-/* Modo oscuro: el campo de fecha puede renderizarse blanco (nativo), forzar texto oscuro */
-{'/* Dark mode date input fix */ .stExpander .stDateInput div[data-baseweb="input"] { background-color: #1C2128 !important; border-color: #30363D !important; } .stExpander .stDateInput div[data-baseweb="input"] input, .stExpander .stDateInput input { color: #002244 !important; -webkit-text-fill-color: #002244 !important; }' if dark else ''}
-
-/* Lista desplegable de opciones: azul oscuro NOMII */
+/* Opciones del dropdown: colores del tema */
 [data-baseweb="popover"] ul,
 ul[data-baseweb="menu"],
 [data-baseweb="menu"] {{
-    background-color: #002244 !important;
+    background-color: {T['card_bg']} !important;
+    color: {T['text']} !important;
 }}
 [data-baseweb="option"] {{
-    background-color: #002244 !important;
-    color: #f8fafc !important;
+    background-color: {T['card_bg']} !important;
+    color: {T['text']} !important;
 }}
 [data-baseweb="option"]:hover, [data-baseweb="option"][aria-selected="true"] {{
-    background-color: #003d7a !important;
-    color: #20C6B6 !important;
+    background-color: {T['card_border']} !important;
+    color: {T['heading']} !important;
 }}
 
-/* Modo oscuro: ocultar recuadro blanco de búsqueda en multiselect */
-{'div[data-baseweb="select"] input[type="text"], div[data-baseweb="input"] input[type="text"], input[aria-autocomplete="list"] { background-color: transparent !important; color: #E6EDF3 !important; width: 2px !important; min-width: 2px !important; caret-color: #E6EDF3; }' if dark else 'div[data-baseweb="select"] input[type="text"], input[aria-autocomplete="list"] { background-color: transparent !important; color: #f8fafc !important; caret-color: #f8fafc; }'}
+/* Ocultar recuadro de búsqueda en multiselect */
+div[data-baseweb="select"] input[type="text"],
+input[aria-autocomplete="list"] {{
+    background-color: transparent !important;
+    color: {T['text']} !important;
+    caret-color: {T['text']};
+}}
 
 .stDataFrame {{ border-radius: 12px; overflow: hidden; }}
 </style>

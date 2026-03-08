@@ -156,8 +156,8 @@ section[data-testid="stSidebar"] span {{ color: {T['text']} !important; }}
 .stPlotlyChart {{ border-radius: 12px; overflow: hidden; }}
 
 /* Buttons */
-.stButton > button {{ background-color: {'#ffffff' if dark else '#4B5563'}; color: {'#003366' if dark else 'white'}; border: none; border-radius: 8px; }}
-.stButton > button:hover {{ background-color: #20C6B6; color: white; }}
+.stButton > button {{ background-color: {'#ffffff' if dark else '#4B5563'} !important; color: {'#003366' if dark else 'white'} !important; border: none !important; border-radius: 8px !important; }}
+.stButton > button:hover {{ background-color: #20C6B6 !important; color: white !important; }}
 
 /* Slider */
 .stSlider > div > div > div[role="slider"] {{ background-color: #20C6B6 !important; }}

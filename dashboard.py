@@ -690,35 +690,34 @@ with tab_gastos:
     n_counterparties = df["Counterparty"].nunique()
     median_spend = df["Abs_Amount"].median()
     
-    # MoM change
+    # MoM change + latest month label — unified block to avoid NameErrors
     monthly_totals = df.groupby("Year_Month")["Abs_Amount"].sum().sort_index()
-    if len(monthly_totals) >= 2:
-        last_m = monthly_totals.iloc[-1]
-        prev_m = monthly_totals.iloc[-2]
-        mom_change = ((last_m - prev_m) / prev_m * 100) if prev_m else 0
-        mom_cls = "positive" if mom_change <= 0 else "negative"
-        mom_arrow = "↓" if mom_change <= 0 else "↑"
-        mom_str = f'<div class="kpi-delta {mom_cls}">{mom_arrow} {abs(mom_change):.1f}% vs mes anterior</div>'
-    else:
-        mom_str = ""
-    
-    # Calculate Gasto % sobre Ingresos
-    ingresos_cobrados_total = df_eerr["Ingreso Cobrado"].sum() if "df_eerr" in locals() and not df_eerr.empty else (
-        df_ingresos_raw["Ingreso_Abs"].sum() if "df_ingresos_raw" in locals() and not df_ingresos_raw.empty else 0
-    )
-    gasto_pct_ingresos = (total_spend / ingresos_cobrados_total * 100) if ingresos_cobrados_total > 0 else 0
-    pct_cls = "positive" if gasto_pct_ingresos <= 80 else "negative"
-    
-    # Get the name of the latest month in the filtered range for the label
     if not monthly_totals.empty:
         last_m = monthly_totals.iloc[-1]
         last_month_name = monthly_totals.index[-1]
         last_month_display = datetime.strptime(last_month_name, "%Y-%m").strftime("%m/%Y")
         spend_label = f"Gasto Neto ({last_month_display})"
         spend_value = last_m
+        if len(monthly_totals) >= 2:
+            prev_m = monthly_totals.iloc[-2]
+            mom_change = ((last_m - prev_m) / prev_m * 100) if prev_m else 0
+            mom_cls = "positive" if mom_change <= 0 else "negative"
+            mom_arrow = "↓" if mom_change <= 0 else "↑"
+            mom_str = f'<div class="kpi-delta {mom_cls}">{mom_arrow} {abs(mom_change):.1f}% vs {datetime.strptime(monthly_totals.index[-2], "%Y-%m").strftime("%m/%Y")}</div>'
+        else:
+            mom_str = ""
     else:
+        last_m = 0
         spend_label = "Gasto Total"
         spend_value = total_spend
+        mom_str = ""
+
+    # Gasto % sobre Ingresos
+    ingresos_cobrados_total = df_eerr["Ingreso Cobrado"].sum() if "df_eerr" in locals() and not df_eerr.empty else (
+        df_ingresos_raw["Ingreso_Abs"].sum() if "df_ingresos_raw" in locals() and not df_ingresos_raw.empty else 0
+    )
+    gasto_pct_ingresos = (total_spend / ingresos_cobrados_total * 100) if ingresos_cobrados_total > 0 else 0
+    pct_cls = "positive" if gasto_pct_ingresos <= 80 else "negative"
 
     cols = st.columns(5)
     kpis = [
@@ -1106,33 +1105,31 @@ with tab_ingresos:
     n_clients = df_ing["ID CLIENTE"].nunique() if "ID CLIENTE" in df_ing.columns else 0
     total_cargo = df_ing["CARGO"].sum() if "CARGO" in df_ing.columns else 0
 
-    # MoM change
+    # MoM change + latest month label — unified block to avoid NameErrors
     monthly_rev = df_ing.groupby("Year_Month")["Ingreso_Abs"].sum().sort_index()
-    if len(monthly_rev) >= 2:
-        last_r = monthly_rev.iloc[-1]
-        prev_r = monthly_rev.iloc[-2]
-        mom_rev = ((last_r - prev_r) / prev_r * 100) if prev_r else 0
-        mom_cls_r = "positive" if mom_rev >= 0 else "negative"
-        mom_arrow_r = "↑" if mom_rev >= 0 else "↓"
-        mom_str_r = f'<div class="kpi-delta {mom_cls_r}">{mom_arrow_r} {abs(mom_rev):.1f}% vs mes anterior</div>'
-    else:
-        mom_str_r = ""
-
-    # ── MRR y Churn sincronizados con el último mes DEL RANGO
     if len(monthly_rev) > 0:
         last_r = monthly_rev.iloc[-1]
-        last_month_key = monthly_rev.index[-1]  # "YYYY-MM"
+        last_month_key = monthly_rev.index[-1]
         last_month_display = datetime.strptime(last_month_key, "%Y-%m").strftime("%m/%Y")
-        
-        # MRR: Facturación planificada para ese mes específico
         period_obj = pd.Period(last_month_key, freq="M")
+
+        if len(monthly_rev) >= 2:
+            prev_r = monthly_rev.iloc[-2]
+            prev_month_display = datetime.strptime(monthly_rev.index[-2], "%Y-%m").strftime("%m/%Y")
+            mom_rev = ((last_r - prev_r) / prev_r * 100) if prev_r else 0
+            mom_cls_r = "positive" if mom_rev >= 0 else "negative"
+            mom_arrow_r = "↑" if mom_rev >= 0 else "↓"
+            mom_str_r = f'<div class="kpi-delta {mom_cls_r}">{mom_arrow_r} {abs(mom_rev):.1f}% vs {prev_month_display}</div>'
+        else:
+            mom_str_r = ""
+
+        # MRR: Facturación planificada para ese mes específico
         mrr_total = df_calendario[
             df_calendario["FECHA"].dt.to_period("M") == period_obj
         ]["MONTO"].sum()
-        
         if mrr_total == 0:
-            mrr_total = monthly_rev.iloc[-1]
-            
+            mrr_total = last_r
+
         # Churn del mes específico desde cohortes
         coh_row = df_cohortes[df_cohortes["MES"].dt.to_period("M") == period_obj]
         if not coh_row.empty:
@@ -1144,16 +1141,18 @@ with tab_ingresos:
         else:
             activos = n_clients
             churn_rate = 0
-            
+
         rev_label = f"Ingreso Neto ({last_month_display})"
         rev_value = last_r
         mrr_delta = f'<div class="kpi-delta positive">Mes: {last_month_display}</div>'
     else:
+        last_r = 0
         rev_label = "Ingreso Neto Total"
         rev_value = total_rev
         mrr_total = total_rev
         activos = n_clients
         churn_rate = 0
+        mom_str_r = ""
         mrr_delta = ""
 
     cols_r = st.columns(5)

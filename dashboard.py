@@ -94,7 +94,11 @@ def check_password():
         }}
 
         /* ── Ocultar texto nativo "Press Enter to submit" ── */
-        div[data-testid="stInputHelperText"] {{ display: none !important; }}
+        [data-testid="stInputHelperText"],
+        [data-testid="InputInstructions"],
+        small[data-testid="InputInstructions"],
+        .stInputHelperText,
+        div[data-testid="stInputHelperText"] {{ display: none !important; visibility: hidden !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }}
 
         /* ── Botón ── */
         [data-testid="stForm"] .stFormSubmitButton > button {{

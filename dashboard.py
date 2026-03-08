@@ -358,6 +358,44 @@ input[aria-autocomplete="list"] {{
 }}
 
 .stDataFrame {{ border-radius: 12px; overflow: hidden; }}
+
+/* ═══════════════════════════════════════════════════════════════
+   PORTAL FLOTANTE — ÚLTIMO EN CASCADA (mayor prioridad de orden)
+   Apunta al popover fuera de .stApp, sin depender de herencia.
+   Solo aplica en modo oscuro para no afectar modo claro.
+   ═══════════════════════════════════════════════════════════════ */
+{'/* --- dark popover overrides --- */' if dark else '/* light mode: no portal override needed */'}
+{"""
+div[data-baseweb="popover"] ul,
+div[data-baseweb="popover"] [data-baseweb="menu"] {
+    background-color: #161B22 !important;
+    border: 1px solid #30363D !important;
+}
+div[data-baseweb="popover"] [data-baseweb="option"] {
+    background-color: #161B22 !important;
+    color: #FFFFFF !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
+div[data-baseweb="popover"] [data-baseweb="option"] span,
+div[data-baseweb="popover"] [data-baseweb="option"] div,
+div[data-baseweb="popover"] [data-baseweb="option"] * {
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
+div[data-baseweb="popover"] [data-baseweb="option"]:hover,
+div[data-baseweb="popover"] [data-baseweb="option"][aria-selected="true"] {
+    background-color: #1C3D5A !important;
+    color: #20C6B6 !important;
+}
+div[data-baseweb="popover"] [data-baseweb="option"]:hover *,
+div[data-baseweb="popover"] [data-baseweb="option"][aria-selected="true"] * {
+    color: #20C6B6 !important;
+    -webkit-text-fill-color: #20C6B6 !important;
+}
+""" if dark else ""}
 </style>
 """, unsafe_allow_html=True)
 

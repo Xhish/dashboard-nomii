@@ -205,10 +205,31 @@ span[data-baseweb="tag"] span[role="presentation"] {
 /* CAMBIO 1: Sidebar toggle siempre visible */
 [data-testid="collapsedControl"] {
     display: block !important;
+    visibility: visible !important;
     color: #003366 !important;
+    z-index: 999999 !important;
+    position: fixed !important;
+    top: 0.5rem !important;
+    left: 0.5rem !important;
 }
-button[data-testid="baseButton-header"] {
+[data-testid="collapsedControl"] > button {
     color: #003366 !important;
+    background: rgba(255,255,255,0.9) !important;
+    border: 2px solid #003366 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+    padding: 4px 8px !important;
+}
+[data-testid="collapsedControl"] > button:hover {
+    background: #003366 !important;
+    color: white !important;
+}
+/* Fallback para otros selectores de Streamlit */
+button[kind="header"], 
+button[data-testid="baseButton-header"],
+.css-1rs6os.edgvbvh3 {
+    display: block !important;
+    visibility: visible !important;
 }
 </style>
 """, unsafe_allow_html=True)

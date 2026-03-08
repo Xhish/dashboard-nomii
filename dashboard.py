@@ -201,6 +201,15 @@ span[data-baseweb="tag"] span[role="presentation"] {
 .stSlider > div > div > div[role="slider"] {
     background-color: #20C6B6 !important;
 }
+
+/* CAMBIO 1: Sidebar toggle siempre visible */
+[data-testid="collapsedControl"] {
+    display: block !important;
+    color: #003366 !important;
+}
+button[data-testid="baseButton-header"] {
+    color: #003366 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -385,9 +394,19 @@ with st.sidebar:
     st.markdown("### Período")
     min_date = df_raw["Date"].min().date()
     max_date = df_raw["Date"].max().date()
+    # CAMBIO 2: Filtros por defecto al mes actual
+    from datetime import date
+    import calendar
+    today = date.today()
+    default_start = date(today.year, today.month, 1)
+    last_day = calendar.monthrange(today.year, today.month)[1]
+    default_end = date(today.year, today.month, last_day)
+    # Asegurar que los defaults estén dentro del rango de datos
+    default_start = max(default_start, min_date)
+    default_end = min(default_end, max_date)
     date_range = st.date_input(
         "Rango de fechas",
-        value=(min_date, max_date),
+        value=(default_start, default_end),
         min_value=min_date,
         max_value=max_date,
     )
@@ -1065,7 +1084,12 @@ with tab_kpis:
     # ── Month Selector ──────────────────────────────────────────────────────
     available_months = sorted(df_calendario["FECHA"].dropna().dt.to_period("M").unique())
     month_labels = [str(m) for m in available_months]
-    default_idx = len(month_labels) - 1 if month_labels else 0
+    # CAMBIO 2: Selector de mes por defecto al mes actual
+    current_month_str = datetime.now().strftime("%Y-%m")
+    if current_month_str in month_labels:
+        default_idx = month_labels.index(current_month_str)
+    else:
+        default_idx = len(month_labels) - 1 if month_labels else 0
     sel_month_label = st.selectbox("📅 Selecciona el mes", month_labels, index=default_idx)
     sel_period = pd.Period(sel_month_label, freq="M")
 
@@ -1161,16 +1185,16 @@ with tab_kpis:
     <div class="exec-row">
         <div class="exec-card warn">
             <div class="exec-label">Ingreso Pendiente por Cobrar</div>
-            <div class="exec-value red">{pendiente:,.0f}</div>
+            <div class="exec-value red">€{pendiente:,.0f}</div>
         </div>
         <div class="exec-card">
             <div class="exec-label">Cuotas Atrasadas</div>
-            <div class="exec-value red">{cuotas_atrasadas_monto:,.0f}</div>
+            <div class="exec-value red">€{cuotas_atrasadas_monto:,.0f}</div>
             <div class="exec-sub">Cantidad: {cuotas_atrasadas_cant}</div>
         </div>
         <div class="exec-card">
             <div class="exec-label">Cuotas por Cobrar</div>
-            <div class="exec-value gold">{cuotas_por_cobrar_monto:,.0f}</div>
+            <div class="exec-value gold">€{cuotas_por_cobrar_monto:,.0f}</div>
             <div class="exec-sub">Cantidad: {cuotas_por_cobrar_cant}</div>
         </div>
     </div>
@@ -1179,15 +1203,15 @@ with tab_kpis:
     <div class="exec-row">
         <div class="exec-card">
             <div class="exec-label">Total Salidas</div>
-            <div class="exec-value red">{total_salidas:,.2f}</div>
+            <div class="exec-value red">€{total_salidas:,.2f}</div>
         </div>
         <div class="exec-card highlight">
             <div class="exec-label">Margen Bruto</div>
-            <div class="exec-value {'green' if margen_bruto >= 0 else 'red'}">{margen_bruto:,.2f}</div>
+            <div class="exec-value {'green' if margen_bruto >= 0 else 'red'}">€{margen_bruto:,.2f}</div>
         </div>
         <div class="exec-card highlight">
             <div class="exec-label">EBITDA</div>
-            <div class="exec-value {'green' if ebitda >= 0 else 'red'}">{ebitda:,.2f}</div>
+            <div class="exec-value {'green' if ebitda >= 0 else 'red'}">€{ebitda:,.2f}</div>
         </div>
     </div>
 
@@ -1207,6 +1231,29 @@ with tab_kpis:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    # CAMBIO 5: Expander con detalle de clientes atrasados
+    if cuotas_atrasadas_cant > 0:
+        with st.expander(f"⚠️ Ver {cuotas_atrasadas_cant} cuota(s) atrasada(s) — Detalle de clientes"):
+            detail_cols = [c for c in ["NOMBRE", "MONTO", "N° FACTURA", "FECHA", "PAIS", "ESTADO", "NOTA"] if c in atrasadas.columns]
+            df_atrasadas_display = atrasadas[detail_cols].copy()
+            if "FECHA" in df_atrasadas_display.columns:
+                df_atrasadas_display["FECHA"] = pd.to_datetime(df_atrasadas_display["FECHA"]).dt.strftime("%Y-%m-%d")
+            df_atrasadas_display = df_atrasadas_display.sort_values("MONTO", ascending=False)
+            st.dataframe(
+                df_atrasadas_display,
+                use_container_width=True,
+                height=min(38 * len(df_atrasadas_display) + 50, 400),
+                column_config={
+                    "MONTO": st.column_config.NumberColumn("Monto €", format="€%.2f"),
+                    "NOMBRE": st.column_config.TextColumn("Cliente", width="large"),
+                    "N° FACTURA": st.column_config.TextColumn("N° Factura"),
+                    "FECHA": st.column_config.TextColumn("Fecha"),
+                    "PAIS": st.column_config.TextColumn("País"),
+                    "NOTA": st.column_config.LinkColumn("Link Factura", display_text="Ver factura"),
+                },
+                hide_index=True,
+            )
 
     # ── Mini Charts ──────────────────────────────────────────────────────
     st.markdown('<div class="section-title">📈 Evolución Mensual</div>', unsafe_allow_html=True)

@@ -284,20 +284,29 @@ button[data-testid="stSidebarCollapse"],
 
 /* ── EXPANDERS: sin forzar colores, usa el tema nativo ── */
 
-/* Opciones del dropdown: paleta NOMII adaptada al tema */
+/* ── Opciones del dropdown: targeting explícito BaseWeb ── */
 [data-baseweb="popover"] ul,
 ul[data-baseweb="menu"],
 [data-baseweb="menu"] {{
-    background-color: {T['card_bg']};
-    border: 1px solid {T['card_border']};
+    background-color: {'#0D1117' if dark else T['card_bg']} !important;
+    border: 1px solid {'#30363D' if dark else T['card_border']} !important;
 }}
 [data-baseweb="option"] {{
-    background-color: {T['card_bg']};
-    color: {T['text']} !important;
+    background-color: {'#0D1117' if dark else T['card_bg']} !important;
+    color: {'#E6EDF3' if dark else T['text']} !important;
 }}
-[data-baseweb="option"]:hover, [data-baseweb="option"][aria-selected="true"] {{
-    background-color: {'#1C3D5A' if dark else '#B3D9EA'};
-    color: {'#20C6B6' if dark else '#003366'};
+/* Herencia a todos los hijos del option */
+[data-baseweb="option"] * {{
+    color: inherit !important;
+}}
+[data-baseweb="option"]:hover,
+[data-baseweb="option"][aria-selected="true"] {{
+    background-color: #1C3D5A !important;
+    color: #20C6B6 !important;
+}}
+[data-baseweb="option"]:hover *,
+[data-baseweb="option"][aria-selected="true"] * {{
+    color: inherit !important;
 }}
 /* Modo oscuro: mantener fondo y texto del expander al expandir */
 {'/* dark expander */ .stExpander { background-color: #161B22 !important; border-color: #30363D !important; } .streamlit-expanderHeader, .stExpander [data-testid="stExpanderHeader"], .stExpander summary { background-color: #161B22 !important; color: #E6EDF3 !important; } .streamlit-expanderContent, .stExpander [data-testid="stExpanderDetails"] { background-color: #161B22 !important; }' if dark else ''}

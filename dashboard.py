@@ -1103,28 +1103,44 @@ with tab_ingresos:
     else:
         mom_str_r = ""
 
-    # Extraer datos de clientes para MRR y Churn desde RESUMEN CLIENTES
-    df_clientes = load_resumen_clientes()
-    
-    if df_clientes is not None and len(df_clientes) > 0 and len(df_ing) > 0:
-        activos = len(df_clientes[df_clientes["ESTADO"].isin(["OK", "¡REGULARIZAR!"])])
-        eliminados = len(df_clientes[df_clientes["ESTADO"] == "ELIMINADO"])
-        
-        avg_mrr = avg_ing  # Estimación simple de MRR promedio por cliente
-        mrr_total = activos * avg_mrr if activos > 0 else total_rev
-        churn_rate = (eliminados / (activos + eliminados) * 100) if (activos + eliminados) > 0 else 0
+    # ── MRR real: suma de facturación planificada del mes más reciente en df_calendario
+    # df_calendario representa el billing recurrente contractual, no el ticket promedio
+    last_cal_period = df_calendario["FECHA"].dt.to_period("M").max()
+    mrr_total = df_calendario[
+        df_calendario["FECHA"].dt.to_period("M") == last_cal_period
+    ]["MONTO"].sum()
+    if mrr_total == 0:
+        # Fallback: ingreso real del mes más reciente en el rango filtrado
+        mrr_total = monthly_rev.iloc[-1] if len(monthly_rev) > 0 else total_rev
+
+    # ── Churn Rate mensual correcto: eliminados este mes / activos inicio de mes
+    # Usar df_cohortes (tiene datos granulares por mes) en lugar del total histórico
+    coh_sorted_ing = df_cohortes.dropna(subset=["MES"]).sort_values("MES")
+    # Buscar el mes más reciente dentro del rango de fechas filtrado
+    coh_in_range = coh_sorted_ing[
+        coh_sorted_ing["MES"].dt.date <= d_end
+    ]
+    if len(coh_in_range) > 0 and "ELIMINADOS X MES" in coh_in_range.columns:
+        last_coh = coh_in_range.iloc[-1]
+        elim_mes = int(last_coh.get("ELIMINADOS X MES", 0) or 0)
+        act_fin_mes = int(last_coh.get("CANTIDAD CLIENTES ACTIVOS X MES", 0) or 0)
+        activos = act_fin_mes
+        # Activos inicio = activos fin + eliminados del mes (antes de que se fueran)
+        activos_inicio_mes = act_fin_mes + elim_mes
+        churn_rate = (elim_mes / activos_inicio_mes * 100) if activos_inicio_mes > 0 else 0
     else:
-        mrr_total = total_rev
+        # Fallback a resumen_clientes si no hay datos de cohortes
+        df_clientes_fb = load_resumen_clientes()
+        activos = len(df_clientes_fb[df_clientes_fb["ESTADO"].isin(["OK", "¡REGULARIZAR!"])]) if df_clientes_fb is not None else n_clients
         churn_rate = 0
-        activos = n_clients
 
     cols_r = st.columns(5)
     kpis_r = [
         ("Ingreso Neto Total", f"€{total_rev:,.0f}", mom_str_r),
-        ("MRR Estimado", f"€{mrr_total:,.0f}", ""),
-        ("Ticket Promedio (ARPU)", f"€{avg_ing:,.0f}", ""),
+        ("MRR (Facturación Recurrente)", f"€{mrr_total:,.0f}", f'<div class="kpi-delta positive">Mes: {last_cal_period.strftime("%m/%Y")}</div>'),
+        ("ARPU Promedio", f"€{avg_ing:,.0f}", ""),
         ("Clientes Activos", f"{activos}", ""),
-        ("Churn Rate", f"{churn_rate:.1f}%", f'<div class="kpi-delta {"negative" if churn_rate > 5 else "positive"}">Objetivo: < 5%</div>'),
+        ("Churn Mensual", f"{churn_rate:.1f}%", f'<div class="kpi-delta {"negative" if churn_rate > 5 else "positive"}">Objetivo: < 5% / mes</div>'),
     ]
     for col, (label, value, delta) in zip(cols_r, kpis_r):
         col.markdown(
@@ -1361,17 +1377,26 @@ with tab_kpis:
     cuotas_por_cobrar_monto = por_cobrar["MONTO"].sum()
     cuotas_por_cobrar_cant = len(por_cobrar)
 
-    # Expenses KPI
+    # Expenses KPI — misma lógica que Tab EERR para coherencia total
     sal_month = df[
         (df["Date"].dt.to_period("M") == sel_period)
     ] if "Date" in df.columns else pd.DataFrame()
-    total_salidas = sal_month["Amount in EUR"].sum() if len(sal_month) > 0 else 0
 
-    # Margin and EBITDA
-    margen_bruto = ingreso_cobrado + total_salidas  # salidas is negative
-    # EBITDA = Margen Bruto - (COR expenses which are recurrent SaaS-like costs)
-    cor_expenses = sal_month[sal_month["Accounting Type"] == "COR"]["Amount in EUR"].sum().item() if len(sal_month) > 0 and "Accounting Type" in sal_month.columns else 0
-    ebitda = margen_bruto + cor_expenses  # cor_expenses is negative, so this subtracts
+    if len(sal_month) > 0 and "Accounting Type" in sal_month.columns:
+        cor_m  = sal_month[sal_month["Accounting Type"] == "COR"]["Amount in EUR"].sum()
+        opex_m = sal_month[sal_month["Accounting Type"] == "OPEX"]["Amount in EUR"].sum()
+        capex_m= sal_month[sal_month["Accounting Type"] == "CAPEX"]["Amount in EUR"].sum()
+    else:
+        cor_m = opex_m = capex_m = 0
+
+    # Idéntico al Tab EERR:
+    #   Margen Bruto = Ingreso Cobrado + COR          (COR es negativo → lo resta)
+    #   EBITDA       = Margen Bruto   + OPEX          (OPEX es negativo → lo resta)
+    #   FCF          = EBITDA         + CAPEX         (CAPEX es negativo → lo resta)
+    total_salidas = cor_m + opex_m + capex_m          # total gastos del mes (negativo)
+    margen_bruto  = ingreso_cobrado + cor_m
+    ebitda        = margen_bruto + opex_m
+    fcf_kpi       = ebitda + capex_m
 
     # Client KPIs
     coh_month = df_cohortes[df_cohortes["MES"].dt.to_period("M") == sel_period]
@@ -1450,19 +1475,26 @@ with tab_kpis:
         </div>
     </div>
 
-    <div class="exec-section">📊 Resultados Financieros</div>
+    <div class="exec-section">📊 Resultados Financieros — {sel_month_label}</div>
     <div class="exec-row">
         <div class="exec-card">
-            <div class="exec-label">Total Salidas</div>
-            <div class="exec-value red">€{total_salidas:,.2f}</div>
+            <div class="exec-label">Total Salidas (COR + OPEX + CAPEX)</div>
+            <div class="exec-value red">€{abs(total_salidas):,.0f}</div>
         </div>
         <div class="exec-card highlight">
             <div class="exec-label">Margen Bruto</div>
-            <div class="exec-value {'green' if margen_bruto >= 0 else 'red'}">€{margen_bruto:,.2f}</div>
+            <div class="exec-value {'green' if margen_bruto >= 0 else 'red'}">€{margen_bruto:,.0f}</div>
+            <div class="exec-sub">{'✅ ' if margen_bruto >= 0 else '⚠️ '}{(margen_bruto / ingreso_cobrado * 100) if ingreso_cobrado else 0:.1f}% s/ ingresos</div>
         </div>
         <div class="exec-card highlight">
             <div class="exec-label">EBITDA</div>
-            <div class="exec-value {'green' if ebitda >= 0 else 'red'}">€{ebitda:,.2f}</div>
+            <div class="exec-value {'green' if ebitda >= 0 else 'red'}">€{ebitda:,.0f}</div>
+            <div class="exec-sub">{'✅ ' if ebitda >= 0 else '⚠️ '}{(ebitda / ingreso_cobrado * 100) if ingreso_cobrado else 0:.1f}% s/ ingresos</div>
+        </div>
+        <div class="exec-card highlight">
+            <div class="exec-label">FCF (Flujo de Caja Libre)</div>
+            <div class="exec-value {'green' if fcf_kpi >= 0 else 'red'}">€{fcf_kpi:,.0f}</div>
+            <div class="exec-sub">{'✅ Positivo' if fcf_kpi >= 0 else '⚠️ Negativo'}</div>
         </div>
     </div>
 

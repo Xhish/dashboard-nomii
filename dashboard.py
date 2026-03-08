@@ -199,11 +199,17 @@ button[data-testid="stSidebarCollapse"],
     color: #f8fafc !important;
     border-color: rgba(32,198,182,0.35) !important;
 }}
-/* Etiquetas y títulos de filtros: blanco */
-.stExpander label, .stExpander .stMarkdown p, .stExpander .stMarkdown span,
+/* Etiquetas y títulos de filtros: fondo gris oscuro NOMII, letra blanca */
+.stExpander label, .stExpander .stMarkdown p, .stExpander .stMarkdown span {{
+    color: #f8fafc !important;
+}}
 .stExpander .stSelectbox label, .stExpander .stMultiSelect label,
 .stExpander .stDateInput label {{
+    background-color: #1a3356 !important;
     color: #f8fafc !important;
+    padding: 2px 8px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
 }}
 /* Texto toggle del expander */
 .stExpander summary span, .stExpander [data-testid="stExpanderToggleIcon"] {{
@@ -239,8 +245,8 @@ button[data-testid="stSidebarCollapse"],
     color: #f8fafc !important;
     -webkit-text-fill-color: #f8fafc !important;
 }}
-/* Modo oscuro: date input con texto oscuro sobre fondo claro */
-{'/* Dark mode date input fix */ .stExpander .stDateInput div[data-baseweb="input"] { background-color: #1C2128 !important; border-color: #30363D !important; } .stExpander .stDateInput div[data-baseweb="input"] input { color: #E6EDF3 !important; -webkit-text-fill-color: #E6EDF3 !important; }' if dark else ''}
+/* Modo oscuro: el campo de fecha puede renderizarse blanco (nativo), forzar texto oscuro */
+{'/* Dark mode date input fix */ .stExpander .stDateInput div[data-baseweb="input"] { background-color: #1C2128 !important; border-color: #30363D !important; } .stExpander .stDateInput div[data-baseweb="input"] input, .stExpander .stDateInput input { color: #002244 !important; -webkit-text-fill-color: #002244 !important; }' if dark else ''}
 
 /* Lista desplegable de opciones: azul oscuro NOMII */
 [data-baseweb="popover"] ul,
@@ -853,7 +859,8 @@ with tab_gastos:
     st.markdown('<div class="section-title">🏦 Top 15 Proveedores por Gasto</div>', unsafe_allow_html=True)
     
     top_cp = (
-        df.groupby("Counterparty")["Abs_Amount"]
+        df[df["Counterparty"].notna() & (df["Counterparty"].astype(str).str.strip() != "") & (df["Counterparty"].astype(str).str.lower() != "undefined")]
+        .groupby("Counterparty")["Abs_Amount"]
         .sum()
         .nlargest(15)
         .sort_values()

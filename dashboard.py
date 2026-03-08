@@ -68,189 +68,176 @@ def check_password():
 if not check_password():
     st.stop()
 
+# ─── DARK MODE STATE ────────────────────────────────────────────────────────
+if "dark_mode" not in st.session_state:
+    st.session_state.dark_mode = False
+
+dark = st.session_state.dark_mode
+
+# ─── THEME COLORS ───────────────────────────────────────────────────────────
+if dark:
+    T = {
+        "bg": "#0E1117", "bg2": "#161B22", "card_bg": "#1C2128",
+        "card_border": "#30363D", "text": "#E6EDF3", "text2": "#8B949E",
+        "heading": "#58A6FF", "sidebar_bg": "#161B22", "sidebar_border": "#30363D",
+        "card_highlight_bg": "linear-gradient(135deg, #0d1f3c 0%, #0e2a40 100%)",
+        "card_highlight_border": "#58A6FF", "kpi_value": "#E6EDF3",
+        "label_color": "#8B949E", "grid_color": "#21262D",
+        "section_border": "#20C6B6", "tag_bg": "#1C3D5A",
+        "toggle_bg": "rgba(30,35,45,0.95)", "toggle_border": "#58A6FF",
+    }
+else:
+    T = {
+        "bg": "#FFFFFF", "bg2": "#F9F9F9", "card_bg": "#FFFFFF",
+        "card_border": "#B3D9EA", "text": "#333333", "text2": "#4D7EA8",
+        "heading": "#003366", "sidebar_bg": "#F9F9F9", "sidebar_border": "#B3D9EA",
+        "card_highlight_bg": "linear-gradient(135deg, #f0f7ff 0%, #e8f4f8 100%)",
+        "card_highlight_border": "#003366", "kpi_value": "#003366",
+        "label_color": "#4D7EA8", "grid_color": "#f1f5f9",
+        "section_border": "#20C6B6", "tag_bg": "#003366",
+        "toggle_bg": "rgba(255,255,255,0.95)", "toggle_border": "#003366",
+    }
+
 # ─── CUSTOM CSS ─────────────────────────────────────────────────────────────
-st.markdown("""
+st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* Global */
-html, body, [class*="css"] {
-    font-family: 'DM Sans', sans-serif;
-}
-.block-container { padding-top: 1.5rem; padding-bottom: 1rem; }
+html, body, [class*="css"] {{ font-family: 'DM Sans', sans-serif; }}
+.block-container {{ padding-top: 1.5rem; padding-bottom: 1rem; }}
+
+/* Theme background */
+.stApp {{ background-color: {T['bg']} !important; color: {T['text']} !important; }}
 
 /* Header */
-.main-header {
+.main-header {{
     background: linear-gradient(135deg, #002244 0%, #003366 50%, #002244 100%);
-    padding: 1.8rem 2.2rem;
-    border-radius: 16px;
-    margin-bottom: 1.5rem;
-    border: 1px solid rgba(32,198,182,0.2);
-    box-shadow: 0 4px 24px rgba(0,51,102,0.15);
-}
-.main-header h1 {
-    color: #f8fafc;
-    font-size: 1.7rem;
-    font-weight: 700;
-    margin: 0;
-    letter-spacing: -0.5px;
-}
-.main-header p {
-    color: #B3D9EA;
-    font-size: 0.88rem;
-    margin: 0.3rem 0 0 0;
-}
-.accent-dot { color: #20C6B6; }
+    padding: 1.8rem 2.2rem; border-radius: 16px; margin-bottom: 1.5rem;
+    border: 1px solid rgba(32,198,182,0.2); box-shadow: 0 4px 24px rgba(0,51,102,0.15);
+}}
+.main-header h1 {{ color: #f8fafc; font-size: 1.7rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; }}
+.main-header p {{ color: #B3D9EA; font-size: 0.88rem; margin: 0.3rem 0 0 0; }}
+.accent-dot {{ color: #20C6B6; }}
 
 /* KPI Cards */
-.kpi-card {
-    background: #ffffff;
-    border: 1px solid #B3D9EA;
-    border-radius: 14px;
-    padding: 1.3rem 1.5rem;
-    text-align: left;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+.kpi-card {{
+    background: {T['card_bg']}; border: 1px solid {T['card_border']};
+    border-radius: 14px; padding: 1.3rem 1.5rem; text-align: left;
+    box-shadow: 0 1px 4px rgba(0,0,0,{'0.15' if dark else '0.04'});
     transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.07);
-}
-.kpi-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: #4D7EA8;
-    margin-bottom: 0.35rem;
-}
-.kpi-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.55rem;
-    font-weight: 700;
-    color: #003366;
-    line-height: 1.2;
-}
-.kpi-delta {
-    font-size: 0.78rem;
-    font-weight: 600;
-    margin-top: 0.25rem;
-}
-.kpi-delta.positive { color: #20C6B6; }
-.kpi-delta.negative { color: #ef4444; }
+}}
+.kpi-card:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,{'0.3' if dark else '0.07'}); }}
+.kpi-label {{ font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.8px; color: {T['label_color']}; margin-bottom: 0.35rem; }}
+.kpi-value {{ font-family: 'JetBrains Mono', monospace; font-size: 1.55rem;
+    font-weight: 700; color: {T['kpi_value']}; line-height: 1.2; }}
+.kpi-delta {{ font-size: 0.78rem; font-weight: 600; margin-top: 0.25rem; }}
+.kpi-delta.positive {{ color: #20C6B6; }}
+.kpi-delta.negative {{ color: #ef4444; }}
 
 /* Section titles */
-.section-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #003366;
-    margin: 1.8rem 0 0.8rem 0;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #20C6B6;
-    letter-spacing: -0.3px;
-}
+.section-title {{ font-size: 1.05rem; font-weight: 700; color: {T['heading']};
+    margin: 1.8rem 0 0.8rem 0; padding-bottom: 0.5rem;
+    border-bottom: 2px solid {T['section_border']}; letter-spacing: -0.3px; }}
 
 /* Sidebar */
-section[data-testid="stSidebar"] {
-    background: #F9F9F9;
-    border-right: 1px solid #B3D9EA;
-}
-section[data-testid="stSidebar"] .stMarkdown h3 {
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #003366;
-    font-weight: 600;
-    margin-top: 1rem;
-}
+section[data-testid="stSidebar"] {{ background: {T['sidebar_bg']}; border-right: 1px solid {T['sidebar_border']}; }}
+section[data-testid="stSidebar"] .stMarkdown h2,
+section[data-testid="stSidebar"] .stMarkdown h3 {{ color: {T['heading']}; }}
+section[data-testid="stSidebar"] .stMarkdown h3 {{ font-size: 0.8rem; text-transform: uppercase;
+    letter-spacing: 1px; font-weight: 600; margin-top: 1rem; }}
+section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] span {{ color: {T['text']} !important; }}
 
-/* Hide streamlit branding */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
+/* Branding */
+#MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}} header {{visibility: hidden;}}
 
-/* Plotly charts container */
-.stPlotlyChart {
-    border-radius: 12px;
-    overflow: hidden;
-}
+/* Plotly */
+.stPlotlyChart {{ border-radius: 12px; overflow: hidden; }}
 
-/* Multiselect tags — NOMII colors */
-span[data-baseweb="tag"] {
-    background-color: #003366 !important;
-    color: white !important;
-    border-radius: 6px !important;
-}
-span[data-baseweb="tag"] span[role="presentation"] {
-    color: white !important;
-}
+/* Tags */
+span[data-baseweb="tag"] {{ background-color: {T['tag_bg']} !important; color: white !important; border-radius: 6px !important; }}
+span[data-baseweb="tag"] span[role="presentation"] {{ color: white !important; }}
 
-/* Buttons and interactive elements */
-.stButton > button {
-    background-color: #003366;
-    color: white;
-    border: none;
-    border-radius: 8px;
-}
-.stButton > button:hover {
-    background-color: #20C6B6;
-    color: white;
-}
+/* Buttons */
+.stButton > button {{ background-color: {'#1C3D5A' if dark else '#003366'}; color: white; border: none; border-radius: 8px; }}
+.stButton > button:hover {{ background-color: #20C6B6; color: white; }}
 
-/* Slider and checkbox accents */
-.stSlider > div > div > div[role="slider"] {
-    background-color: #20C6B6 !important;
-}
+/* Slider */
+.stSlider > div > div > div[role="slider"] {{ background-color: #20C6B6 !important; }}
 
-/* CAMBIO 1: Sidebar toggle siempre visible (Abrir y Cerrar) */
-button[data-testid="stSidebarCollapse"], 
+/* Sidebar toggle */
+button[data-testid="stSidebarCollapse"],
 [data-testid="collapsedControl"],
-[data-testid="collapsedControl"] > button {
-    visibility: visible !important;
-    display: block !important;
-    position: fixed !important;
-    top: 10px !important;
-    left: 10px !important;
-    z-index: 999999 !important;
-    color: #003366 !important;
-    background: rgba(255,255,255,0.95) !important;
-    border: 2px solid #003366 !important;
-    border-radius: 8px !important;
+[data-testid="collapsedControl"] > button {{
+    visibility: visible !important; display: block !important; position: fixed !important;
+    top: 10px !important; left: 10px !important; z-index: 999999 !important;
+    color: {T['heading']} !important; background: {T['toggle_bg']} !important;
+    border: 2px solid {T['toggle_border']} !important; border-radius: 8px !important;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
-}
+}}
+
+/* Text & headings */
+.stApp p, .stApp span, .stApp label {{ color: {T['text']}; }}
+.stApp h1, .stApp h2, .stApp h3, .stApp h4 {{ color: {T['heading']} !important; }}
+
+/* Tabs */
+.stTabs [data-baseweb="tab"] {{ color: {T['text2']}; }}
+.stTabs [aria-selected="true"] {{ color: {T['heading']} !important; }}
+
+/* Inputs */
+.stSelectbox div[data-baseweb="select"] > div,
+.stMultiSelect div[data-baseweb="select"] > div {{
+    background-color: {T['card_bg']} !important; color: {T['text']} !important;
+    border-color: {T['card_border']} !important;
+}}
+
+/* Expanders */
+.streamlit-expanderHeader {{ color: {T['heading']} !important; background-color: {T['card_bg']} !important; }}
+.stDataFrame {{ border-radius: 12px; overflow: hidden; }}
 </style>
 """, unsafe_allow_html=True)
 
 # ─── NOMII INSTITUTIONAL COLORS ────────────────────────────────────────────
 NOMII = {
-    "primary": "#003366",      # Azul Profundo
-    "secondary": "#20C6B6",    # Turquesa Clínico
-    "accent": "#FFCC00",       # Dorado
-    "text": "#333333",         # Gris oscuro
-    "background": "#F9F9F9",   # Fondo suave
+    "primary": "#003366",
+    "secondary": "#20C6B6",
+    "accent": "#FFCC00",
+    "text": T["text"],
+    "background": T["bg2"],
     "light_blue": "#4D7EA8",
     "pale_blue": "#B3D9EA",
+    "heading": T["heading"],
+    "card_bg": T["card_bg"],
+    "card_border": T["card_border"],
+    "grid_color": T["grid_color"],
 }
 
 PALETTE = [
-    "#003366", "#20C6B6", "#4D7EA8", "#FFCC00", "#B3D9EA",  # NOMII core
-    "#005599", "#17a89c", "#6A9BC3", "#FFD633", "#CCE5F0",  # NOMII lighter
-    "#001a33", "#0f8a7e", "#3a6d8c", "#CC9900", "#8AB8D0",  # NOMII darker
+    "#003366", "#20C6B6", "#4D7EA8", "#FFCC00", "#B3D9EA",
+    "#005599", "#17a89c", "#6A9BC3", "#FFD633", "#CCE5F0",
+    "#001a33", "#0f8a7e", "#3a6d8c", "#CC9900", "#8AB8D0",
 ]
+if dark:
+    PALETTE = [
+        "#4D99CC", "#20C6B6", "#6AB0D2", "#FFCC00", "#8FCAE8",
+        "#3388BB", "#2ED8C8", "#89C4DE", "#FFD633", "#A8D8F0",
+        "#2677AA", "#17A89C", "#5BA0C4", "#E6B800", "#6EBBDA",
+    ]
 
 CHART_LAYOUT = dict(
-    font=dict(family="DM Sans", color=NOMII["text"]),
+    font=dict(family="DM Sans", color=T["text"]),
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     margin=dict(l=40, r=20, t=40, b=40),
     hoverlabel=dict(
-        bgcolor=NOMII["primary"],
-        font_size=12,
-        font_family="DM Sans",
-        font_color="#f8fafc",
+        bgcolor="#1C2128" if dark else "#003366",
+        font_size=12, font_family="DM Sans",
+        font_color="#E6EDF3" if dark else "#f8fafc",
         bordercolor="rgba(0,0,0,0)",
     ),
 )
+
 
 
 # ─── LOAD DATA ──────────────────────────────────────────────────────────────
@@ -397,6 +384,13 @@ df_calendario = load_calendario()
 df_clientes = load_resumen_clientes()
 df_cohortes = load_cohortes()
 with st.sidebar:
+    # ── Dark Mode Toggle ─────────────────────────────────────────────
+    def toggle_dark():
+        st.session_state.dark_mode = not st.session_state.dark_mode
+    
+    dm_label = "☀️ Modo Claro" if dark else "🌙 Modo Nocturno"
+    st.button(dm_label, on_click=toggle_dark, use_container_width=True)
+    st.markdown("---")
     st.markdown("## 🔎 Filtros")
 
     st.markdown("### Período")
@@ -562,7 +556,7 @@ with tab_gastos:
             title=dict(text="Gasto Mensual vs Acumulado", font=dict(size=14)),
             height=400,
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
-            yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+            yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
             yaxis2=dict(gridcolor="rgba(0,0,0,0)", tickformat="€,.0f"),
             xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
         )
@@ -625,7 +619,7 @@ with tab_gastos:
             **CHART_LAYOUT,
             title=dict(text="Gasto por Departamento", font=dict(size=14)),
             height=420,
-            xaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+            xaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
             yaxis=dict(tickfont=dict(size=11)),
         )
         st.plotly_chart(fig_dept, use_container_width=True)
@@ -659,7 +653,7 @@ with tab_gastos:
             barmode="stack",
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=10)),
             xaxis=dict(tickangle=-45, tickfont=dict(size=9)),
-            yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+            yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
         )
         fig_acct.update_traces(hovertemplate="<b>%{x}</b><br>€%{y:,.0f}<extra></extra>")
         st.plotly_chart(fig_acct, use_container_width=True)
@@ -745,7 +739,7 @@ with tab_gastos:
             title=dict(text="Gasto por Trimestre", font=dict(size=14)),
             height=380,
             xaxis=dict(tickfont=dict(size=11)),
-            yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+            yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
         )
         st.plotly_chart(fig_tri, use_container_width=True)
     
@@ -770,7 +764,7 @@ with tab_gastos:
             height=380,
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
             xaxis=dict(tickangle=-45, tickfont=dict(size=9)),
-            yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+            yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
         )
         fig_fac.update_traces(hovertemplate="<b>%{x}</b><br>€%{y:,.0f}<extra></extra>")
         st.plotly_chart(fig_fac, use_container_width=True)
@@ -804,7 +798,7 @@ with tab_gastos:
     fig_cp.update_layout(
         **{k: v for k, v in CHART_LAYOUT.items() if k != "margin"},
         height=480,
-        xaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+        xaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
         yaxis=dict(tickfont=dict(size=11)),
         margin=dict(l=180, r=80, t=20, b=40),
     )
@@ -936,7 +930,7 @@ with tab_ingresos:
             title=dict(text="Ingreso Mensual vs Acumulado", font=dict(size=14)),
             height=400,
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
-            yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+            yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
             yaxis2=dict(gridcolor="rgba(0,0,0,0)", tickformat="€,.0f"),
             xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
         )
@@ -1022,8 +1016,8 @@ with tab_ingresos:
                 **{k: v for k, v in CHART_LAYOUT.items() if k != "margin"},
                 title=dict(text="Evolución Ingresos por Cohorte (Top 12)", font=dict(size=14)),
                 height=420,
-                xaxis=dict(gridcolor="#f1f5f9", type="category", tickangle=-45),
-                yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f", tickfont=dict(size=10)),
+                xaxis=dict(gridcolor=NOMII["grid_color"], type="category", tickangle=-45),
+                yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f", tickfont=dict(size=10)),
                 margin=dict(l=40, r=20, t=40, b=40),
                 showlegend=True,
                 legend=dict(orientation="h", yanchor="bottom", y=-0.5, xanchor="center", x=0.5, font=dict(size=10))
@@ -1059,7 +1053,7 @@ with tab_ingresos:
                 title=dict(text="Clientes Activos por Mes", font=dict(size=14)),
                 height=420,
                 xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
-                yaxis=dict(gridcolor="#f1f5f9"),
+                yaxis=dict(gridcolor=NOMII["grid_color"]),
             )
             st.plotly_chart(fig_clients, use_container_width=True)
         else:
@@ -1150,23 +1144,23 @@ with tab_kpis:
     <style>
     .exec-row {{ display: flex; gap: 1rem; margin-bottom: 1.2rem; flex-wrap: wrap; }}
     .exec-card {{
-        flex: 1; min-width: 180px; background: #fff; border: 2px solid #B3D9EA;
+        flex: 1; min-width: 180px; background: {T['card_bg']}; border: 2px solid {T['card_border']};
         border-radius: 14px; padding: 1.2rem 1rem; text-align: center;
-        box-shadow: 0 2px 8px rgba(0,51,102,0.06);
+        box-shadow: 0 2px 8px rgba(0,51,102,{'0.2' if dark else '0.06'});
     }}
-    .exec-card.highlight {{ border-color: #003366; background: linear-gradient(135deg, #f0f7ff 0%, #e8f4f8 100%); }}
+    .exec-card.highlight {{ border-color: {T['card_highlight_border']}; background: {T['card_highlight_bg']}; }}
     .exec-card.warn {{ border-color: #e74c3c; }}
     .exec-card.green {{ border-color: #20C6B6; }}
     .exec-label {{ font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-                   letter-spacing: 0.06em; color: #003366; margin-bottom: 0.3rem; }}
-    .exec-value {{ font-size: 1.7rem; font-weight: 700; color: #003366; line-height: 1.2; }}
+                   letter-spacing: 0.06em; color: {T['heading']}; margin-bottom: 0.3rem; }}
+    .exec-value {{ font-size: 1.7rem; font-weight: 700; color: {T['kpi_value']}; line-height: 1.2; }}
     .exec-value.turquoise {{ color: #20C6B6; }}
-    .exec-value.gold {{ color: #d4a017; }}
-    .exec-value.red {{ color: #e74c3c; }}
-    .exec-value.green {{ color: #0a8f5f; }}
-    .exec-sub {{ font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }}
-    .exec-section {{ font-size: 0.9rem; font-weight: 700; color: #003366; margin: 1.5rem 0 0.6rem;
-                     border-bottom: 2px solid #20C6B6; padding-bottom: 0.3rem; }}
+    .exec-value.gold {{ color: {'#FFCC00' if dark else '#d4a017'}; }}
+    .exec-value.red {{ color: {'#FF6B6B' if dark else '#e74c3c'}; }}
+    .exec-value.green {{ color: {'#3BC97C' if dark else '#0a8f5f'}; }}
+    .exec-sub {{ font-size: 0.75rem; color: {T['text2']}; margin-top: 0.2rem; }}
+    .exec-section {{ font-size: 0.9rem; font-weight: 700; color: {T['heading']}; margin: 1.5rem 0 0.6rem;
+                     border-bottom: 2px solid {T['section_border']}; padding-bottom: 0.3rem; }}
     </style>
 
     <div class="exec-section">💰 Ingresos — {sel_month_label}</div>
@@ -1294,7 +1288,7 @@ with tab_kpis:
             title=dict(text="Planificado vs Cobrado por Mes", font=dict(size=14)),
             barmode="overlay", height=380,
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
-            yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+            yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
             xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
         )
         st.plotly_chart(fig_plan, use_container_width=True)
@@ -1329,7 +1323,7 @@ with tab_kpis:
                 title=dict(text="Evolución de Clientes", font=dict(size=14)),
                 height=380,
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
-                yaxis=dict(gridcolor="#f1f5f9"),
+                yaxis=dict(gridcolor=NOMII["grid_color"]),
                 xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
             )
             st.plotly_chart(fig_cli, use_container_width=True)
@@ -1471,7 +1465,7 @@ with tab_eerr:
             **CHART_LAYOUT,
             title=dict(text=f"Cascada P&L — {sel_eerr_month}", font=dict(size=14)),
             height=420,
-            yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+            yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
             showlegend=False,
         )
         st.plotly_chart(fig_wf, use_container_width=True)
@@ -1501,7 +1495,7 @@ with tab_eerr:
             title=dict(text="Evolución de Márgenes (%)", font=dict(size=14)),
             height=420,
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
-            yaxis=dict(gridcolor="#f1f5f9", ticksuffix="%"),
+            yaxis=dict(gridcolor=NOMII["grid_color"], ticksuffix="%"),
             xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
         )
         st.plotly_chart(fig_margin, use_container_width=True)
@@ -1531,7 +1525,7 @@ with tab_eerr:
             title=dict(text="Desglose OPEX por Área", font=dict(size=14)),
             barmode="stack", height=420,
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
-            yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+            yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
             xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
         )
         st.plotly_chart(fig_opex, use_container_width=True)
@@ -1568,7 +1562,7 @@ with tab_eerr:
             title=dict(text="Flujo de Caja Libre (FCF)", font=dict(size=14)),
             height=420,
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
-            yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f", title_text="FCF Mensual"),
+            yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f", title_text="FCF Mensual"),
             yaxis2=dict(gridcolor="rgba(0,0,0,0)", tickformat="€,.0f", title_text="FCF Acumulado"),
             xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
         )
@@ -1594,7 +1588,7 @@ with tab_eerr:
         title=dict(text="Ingreso Cobrado vs EBITDA por Mes", font=dict(size=14)),
         barmode="group", height=400,
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=11)),
-        yaxis=dict(gridcolor="#f1f5f9", tickformat="€,.0f"),
+        yaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
         xaxis=dict(tickangle=-45, tickfont=dict(size=10)),
     )
     st.plotly_chart(fig_ie, use_container_width=True)

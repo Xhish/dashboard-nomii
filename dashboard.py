@@ -202,34 +202,21 @@ span[data-baseweb="tag"] span[role="presentation"] {
     background-color: #20C6B6 !important;
 }
 
-/* CAMBIO 1: Sidebar toggle siempre visible */
-[data-testid="collapsedControl"] {
-    display: block !important;
-    visibility: visible !important;
-    color: #003366 !important;
-    z-index: 999999 !important;
-    position: fixed !important;
-    top: 0.5rem !important;
-    left: 0.5rem !important;
-}
+/* CAMBIO 1: Sidebar toggle siempre visible (Abrir y Cerrar) */
+button[data-testid="stSidebarCollapse"], 
+[data-testid="collapsedControl"],
 [data-testid="collapsedControl"] > button {
+    visibility: visible !important;
+    display: block !important;
+    position: fixed !important;
+    top: 10px !important;
+    left: 10px !important;
+    z-index: 999999 !important;
     color: #003366 !important;
-    background: rgba(255,255,255,0.9) !important;
+    background: rgba(255,255,255,0.95) !important;
     border: 2px solid #003366 !important;
     border-radius: 8px !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-    padding: 4px 8px !important;
-}
-[data-testid="collapsedControl"] > button:hover {
-    background: #003366 !important;
-    color: white !important;
-}
-/* Fallback para otros selectores de Streamlit */
-button[kind="header"], 
-button[data-testid="baseButton-header"],
-.css-1rs6os.edgvbvh3 {
-    display: block !important;
-    visibility: visible !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
 }
 </style>
 """, unsafe_allow_html=True)

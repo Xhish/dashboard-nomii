@@ -205,8 +205,13 @@ else:
     }
 
 # ─── CUSTOM CSS ─────────────────────────────────────────────────────────────
+hide_menu_css = ""
+if st.session_state.get("current_user", "") != "nomii":
+    hide_menu_css = "#MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}"
+
 st.markdown(f"""
 <style>
+{hide_menu_css}
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 html, body, [class*="css"] {{ font-family: 'DM Sans', sans-serif; }}

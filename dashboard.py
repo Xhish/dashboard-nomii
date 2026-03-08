@@ -710,8 +710,9 @@ with tab_gastos:
     pct_cls = "positive" if gasto_pct_ingresos <= 80 else "negative"
     
     # Get the name of the latest month in the filtered range for the label
-    last_month_name = monthly_totals.index[-1] if not monthly_totals.empty else ""
-    if last_month_name:
+    if not monthly_totals.empty:
+        last_m = monthly_totals.iloc[-1]
+        last_month_name = monthly_totals.index[-1]
         last_month_display = datetime.strptime(last_month_name, "%Y-%m").strftime("%m/%Y")
         spend_label = f"Gasto Neto ({last_month_display})"
         spend_value = last_m

@@ -1163,7 +1163,7 @@ with tab_ingresos:
     kpis_r = [
         (rev_label.replace("Ingreso Neto", "Ingreso Neto"), f"€{rev_value:,.0f}", mom_str_r),
         ("Ingreso Recurrente", f"€{mrr_total:,.0f}", mrr_delta),
-        ("Ingreso Prom. por Cliente", f"€{(rev_value / activos if activos > 0 else 0):,.0f}", ""),
+        ("Ingreso Prom. por Cliente", f"€{(rev_value / activos if activos > 0 else 0):,.0f}", mrr_delta),
         ("Clientes Activos", f"{activos}", ""),
         ("Tasa Abandono", f"{churn_rate:.1f}%", f'<div class="kpi-delta {"negative" if churn_rate > 5 else "positive"}">Objetivo: ≤ 5% / mes</div>'),
     ]

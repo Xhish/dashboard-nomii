@@ -1451,7 +1451,7 @@ with tab_kpis:
         transition: transform 0.15s ease, box-shadow 0.15s ease;
     }}
     .exec-card:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,{'0.3' if dark else '0.07'}); }}
-    .exec-card.highlight {{ border-color: {T['section_border']}; }}
+    .exec-card.nomii-blue {{ border-color: {NOMII['secondary']}; }}
     .exec-card.warn {{ border-color: #e74c3c; }}
     .exec-card.green {{ border-color: #20C6B6; }}
     .exec-label {{ font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
@@ -1462,13 +1462,13 @@ with tab_kpis:
     .exec-value.red {{ color: {'#FF6B6B' if dark else '#e74c3c'}; }}
     .exec-value.green {{ color: {'#3BC97C' if dark else '#0a8f5f'}; }}
     .exec-sub {{ font-size: 0.75rem; color: {T['text2']}; margin-top: 0.2rem; }}
-    .exec-section {{ font-size: 0.9rem; font-weight: 700; color: {NOMII['secondary']}; margin: 1.5rem 0 0.6rem;
+    .exec-section {{ font-size: 0.9rem; font-weight: 700; color: #B3D9EA; margin: 1.5rem 0 0.6rem;
                      border-bottom: 2px solid {T['section_border']}; padding-bottom: 0.3rem; }}
     </style>
 
     <div class="exec-section">💰 Ingresos — {sel_month_label}</div>
     <div class="exec-row">
-        <div class="exec-card highlight">
+        <div class="exec-card">
             <div class="exec-label">Total Ingreso Planificado</div>
             <div class="exec-value">€{total_planificado:,.0f}</div>
         </div>
@@ -1480,7 +1480,7 @@ with tab_kpis:
             <div class="exec-label">Cantidad</div>
             <div class="exec-value">{cantidad_cobrada}</div>
         </div>
-        <div class="exec-card highlight">
+        <div class="exec-card">
             <div class="exec-label">Ratio Cobranza</div>
             <div class="exec-value turquoise">{ratio_cobranza:.0f}%</div>
         </div>
@@ -1510,17 +1510,17 @@ with tab_kpis:
             <div class="exec-label">Total Salidas (COR + OPEX + CAPEX)</div>
             <div class="exec-value red">€{abs(total_salidas):,.0f}</div>
         </div>
-        <div class="exec-card highlight">
+        <div class="exec-card nomii-blue">
             <div class="exec-label">Margen Bruto</div>
             <div class="exec-value {'green' if margen_bruto >= 0 else 'red'}">€{margen_bruto:,.0f}</div>
             <div class="exec-sub">{'✅ ' if margen_bruto >= 0 else '⚠️ '}{(margen_bruto / ingreso_cobrado * 100) if ingreso_cobrado else 0:.1f}% s/ ingresos</div>
         </div>
-        <div class="exec-card highlight">
+        <div class="exec-card">
             <div class="exec-label">EBITDA</div>
             <div class="exec-value {'green' if ebitda >= 0 else 'red'}">€{ebitda:,.0f}</div>
             <div class="exec-sub">{'✅ ' if ebitda >= 0 else '⚠️ '}{(ebitda / ingreso_cobrado * 100) if ingreso_cobrado else 0:.1f}% s/ ingresos</div>
         </div>
-        <div class="exec-card highlight">
+        <div class="exec-card">
             <div class="exec-label">FCF (Flujo de Caja Libre)</div>
             <div class="exec-value {'green' if fcf_kpi >= 0 else 'red'}">€{fcf_kpi:,.0f}</div>
             <div class="exec-sub">{'✅ Positivo' if fcf_kpi >= 0 else '⚠️ Negativo'}</div>
@@ -1529,7 +1529,7 @@ with tab_kpis:
 
     <div class="exec-section">👥 Clientes — {sel_month_label}</div>
     <div class="exec-row">
-        <div class="exec-card green">
+        <div class="exec-card">
             <div class="exec-label">Total Clientes Activos</div>
             <div class="exec-value">{clientes_activos}</div>
         </div>

@@ -694,12 +694,36 @@ with tab_gastos:
             .sort_values(ascending=False)
             .reset_index()
         )
+        # Mapeo explícito por nombre exacto del DataFrame (case-sensitive)
+        CAT_COLOR_MAP = {
+            "Financial Management": "#003366",  # Azul primario NOMII
+            "Marketing":            "#20C6B6",  # Turquesa secundario
+            "Software":             "#FFCC00",  # Acento oro
+            "Operations":           "#4D7EA8",  # Azul medio
+            "HR":                   "#B3D9EA",  # Azul pálido
+            "Legal":                "#005599",  # Azul oscuro variante
+            "Travel":               "#17a89c",  # Teal variante
+            "Infrastructure":       "#6A9BC3",  # Azul grisáceo
+            "R&D":                  "#FFD633",  # Oro claro
+            "Admin":                "#CCE5F0",  # Azul muy pálido
+        }
+        # Categorías no mapeadas → grises neutros, sin competir visualmente
+        _neutral = ["#94a3b8", "#cbd5e1", "#64748b", "#475569", "#e2e8f0", "#334155"]
+        _ni = 0
+        cat_colors = []
+        for cat in cat_spend["Category"]:
+            if cat in CAT_COLOR_MAP:
+                cat_colors.append(CAT_COLOR_MAP[cat])
+            else:
+                cat_colors.append(_neutral[_ni % len(_neutral)])
+                _ni += 1
+
         fig_donut = go.Figure(
             go.Pie(
                 labels=cat_spend["Category"],
                 values=cat_spend["Abs_Amount"],
                 hole=0.55,
-                marker=dict(colors=PALETTE),
+                marker=dict(colors=cat_colors),
                 textinfo="percent",
                 textfont=dict(size=11, color=T["text"]),
                 hovertemplate="<b>%{label}</b><br>€%{value:,.0f}<br>%{percent}<extra></extra>",

@@ -155,10 +155,6 @@ section[data-testid="stSidebar"] span {{ color: {T['text']} !important; }}
 /* Plotly */
 .stPlotlyChart {{ border-radius: 12px; overflow: hidden; }}
 
-/* Tags */
-span[data-baseweb="tag"] {{ background-color: {T['tag_bg']} !important; color: white !important; border-radius: 6px !important; }}
-span[data-baseweb="tag"] span[role="presentation"] {{ color: white !important; }}
-
 /* Buttons */
 .stButton > button {{ background-color: {'#1C3D5A' if dark else '#4B5563'}; color: white; border: none; border-radius: 8px; }}
 .stButton > button:hover {{ background-color: #20C6B6; color: white; }}

@@ -1505,6 +1505,29 @@ with tab_kpis:
     </div>
     """, unsafe_allow_html=True)
 
+    # CAMBIO 6: Expander con detalle de cuotas por cobrar
+    if cuotas_por_cobrar_cant > 0:
+        with st.expander(f"⏳ Ver {cuotas_por_cobrar_cant} cuota(s) por cobrar — Detalle de clientes"):
+            detail_cols_pc = [c for c in ["NOMBRE", "MONTO", "N° FACTURA", "FECHA", "PAIS", "ESTADO", "NOTA"] if c in por_cobrar.columns]
+            df_por_cobrar_display = por_cobrar[detail_cols_pc].copy()
+            if "FECHA" in df_por_cobrar_display.columns:
+                df_por_cobrar_display["FECHA"] = pd.to_datetime(df_por_cobrar_display["FECHA"]).dt.strftime("%d/%m/%Y")
+            df_por_cobrar_display = df_por_cobrar_display.sort_values("MONTO", ascending=False)
+            st.dataframe(
+                df_por_cobrar_display,
+                use_container_width=True,
+                height=min(38 * len(df_por_cobrar_display) + 50, 400),
+                column_config={
+                    "MONTO": st.column_config.NumberColumn("Monto €", format="€%.2f"),
+                    "NOMBRE": st.column_config.TextColumn("Cliente", width="large"),
+                    "N° FACTURA": st.column_config.TextColumn("N° Factura"),
+                    "FECHA": st.column_config.TextColumn("Fecha"),
+                    "PAIS": st.column_config.TextColumn("País"),
+                    "NOTA": st.column_config.LinkColumn("Link Factura", display_text="Ver factura"),
+                },
+                hide_index=True,
+            )
+
     # CAMBIO 5: Expander con detalle de clientes atrasados (movido bajo Cuentas por Cobrar)
     if cuotas_atrasadas_cant > 0:
         with st.expander(f"⚠️ Ver {cuotas_atrasadas_cant} cuota(s) atrasada(s) — Detalle de clientes"):

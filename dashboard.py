@@ -22,58 +22,114 @@ def check_password():
 
     def login_form():
         """Display the login form."""
-        st.markdown("""
+        login_dark = st.session_state.get("dark_mode", False)
+
+        # ── Paleta según modo ────────────────────────────────────────────────
+        bg_page    = "#0E1117"   if login_dark else "#f1f5f9"
+        bg_card    = "#1C2128"   if login_dark else "#ffffff"
+        border_card= "#30363D"   if login_dark else "#e2e8f0"
+        shadow_card= "rgba(0,0,0,0.4)" if login_dark else "rgba(0,51,102,0.10)"
+        color_title= "#58A6FF"   if login_dark else "#003366"
+        color_sub  = "#8B949E"   if login_dark else "#94a3b8"
+        color_label= "#E6EDF3"   if login_dark else "#374151"
+        bg_input   = "#161B22"   if login_dark else "#f8fafc"
+        border_inp = "#30363D"   if login_dark else "#cbd5e1"
+        border_foc = "#58A6FF"   if login_dark else "#003366"
+        shadow_foc = "rgba(88,166,255,0.12)" if login_dark else "rgba(0,51,102,0.08)"
+        color_text = "#E6EDF3"   if login_dark else "#1e293b"
+        color_ph   = "#8B949E"   if login_dark else "#94a3b8"
+
+        st.markdown(f"""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-        .block-container { padding-top: 3rem !important; }
-        [data-testid="stForm"] {
-            background: #ffffff;
-            border: 1px solid #e2e8f0 !important;
+
+        .stApp {{ background-color: {bg_page} !important; }}
+        .block-container {{ padding-top: 3rem !important; }}
+
+        /* ── Tarjeta del formulario ── */
+        [data-testid="stForm"] {{
+            background: {bg_card} !important;
+            border: 1px solid {border_card} !important;
             border-radius: 20px !important;
-            padding: 1.8rem 1.5rem 1.5rem !important;
-            box-shadow: 0 8px 32px rgba(0,51,102,0.10) !important;
-        }
-        [data-testid="stForm"] .stTextInput input {
+            padding: 2rem 1.8rem 1.6rem !important;
+            box-shadow: 0 8px 32px {shadow_card} !important;
+        }}
+
+        /* ── Labels ── */
+        [data-testid="stForm"] label {{
+            font-family: 'DM Sans', sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 0.82rem !important;
+            color: {color_label} !important;
+        }}
+
+        /* ── Contenedor del input: borde rodea TODO el campo (incl. ícono ojo) ── */
+        [data-testid="stForm"] [data-baseweb="input"] {{
             border-radius: 10px !important;
-            border: 1.5px solid #cbd5e1 !important;
-            background: #f8fafc !important;
+            border: 1.5px solid {border_inp} !important;
+            background-color: {bg_input} !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+        }}
+        [data-testid="stForm"] [data-baseweb="input"]:focus-within {{
+            border-color: {border_foc} !important;
+            box-shadow: 0 0 0 3px {shadow_foc} !important;
+        }}
+
+        /* ── Base-input: transparente para no chocar con el fondo ── */
+        [data-testid="stForm"] [data-baseweb="base-input"] {{
+            background-color: transparent !important;
+        }}
+
+        /* ── Texto e input ── */
+        [data-testid="stForm"] [data-baseweb="base-input"] input {{
+            font-family: 'DM Sans', sans-serif !important;
+            font-weight: 400 !important;
             font-size: 0.88rem !important;
-            padding: 0.5rem 0.9rem !important;
-            color: #1e293b !important;
-        }
-        [data-testid="stForm"] .stTextInput input:focus {
-            border-color: #003366 !important;
-            box-shadow: 0 0 0 3px rgba(0,51,102,0.08) !important;
-            background: #fff !important;
-        }
-        [data-testid="stForm"] .stFormSubmitButton > button {
+            color: {color_text} !important;
+            background-color: transparent !important;
+        }}
+        [data-testid="stForm"] [data-baseweb="base-input"] input::placeholder {{
+            color: {color_ph} !important;
+            opacity: 1 !important;
+        }}
+
+        /* ── Ocultar texto nativo "Press Enter to submit" ── */
+        div[data-testid="stInputHelperText"] {{ display: none !important; }}
+
+        /* ── Botón ── */
+        [data-testid="stForm"] .stFormSubmitButton > button {{
             background: linear-gradient(135deg, #003366 0%, #20C6B6 100%) !important;
             color: white !important;
+            border: none !important;
             border-radius: 10px !important;
+            font-family: 'DM Sans', sans-serif !important;
             font-weight: 600 !important;
             font-size: 0.9rem !important;
             width: 100% !important;
-            padding: 0.55rem !important;
-            margin-top: 0.4rem !important;
-            border: none !important;
+            padding: 0.6rem !important;
+            margin-top: 0.5rem !important;
             letter-spacing: 0.3px !important;
-        }
-        [data-testid="stForm"] .stFormSubmitButton > button:hover {
-            opacity: 0.9 !important;
-        }
+            transition: opacity 0.2s ease !important;
+        }}
+        [data-testid="stForm"] .stFormSubmitButton > button:hover {{
+            opacity: 0.88 !important;
+        }}
         </style>
         """, unsafe_allow_html=True)
 
         _, col, _ = st.columns([1.8, 1, 1.8])
         with col:
-            st.markdown("""
+            st.markdown(f"""
             <div style="text-align:center; margin-bottom:1.4rem; font-family:'DM Sans',sans-serif;">
                 <div style="display:inline-flex; width:54px; height:54px;
                      background:linear-gradient(135deg,#003366,#20C6B6);
                      border-radius:16px; align-items:center; justify-content:center;
-                     font-size:1.5rem; margin-bottom:0.75rem; box-shadow:0 4px 16px rgba(0,51,102,0.2);">🔐</div>
-                <div style="color:#003366; font-size:1.25rem; font-weight:700; line-height:1.2;">NOMII Dashboard</div>
-                <div style="color:#94a3b8; font-size:0.78rem; margin-top:0.25rem;">Ingresa tus credenciales para acceder</div>
+                     font-size:1.5rem; margin-bottom:0.75rem;
+                     box-shadow:0 4px 16px rgba(0,51,102,0.25);">🔐</div>
+                <div style="color:{color_title}; font-size:1.25rem; font-weight:700;
+                     line-height:1.2; font-family:'DM Sans',sans-serif;">NOMII Dashboard</div>
+                <div style="color:{color_sub}; font-size:0.78rem; margin-top:0.25rem;
+                     font-family:'DM Sans',sans-serif;">Ingresa tus credenciales para acceder</div>
             </div>
             """, unsafe_allow_html=True)
             with st.form("credentials"):

@@ -619,15 +619,15 @@ with hdr_col1:
     )
 
 with hdr_col2:
-    if st.button("🔄", help="Sincronizar y actualizar datos desde el Excel/SharePoint"):
-        st.cache_data.clear()
-        st.rerun()
-
-with hdr_col3:
     def toggle_dark():
         st.session_state.dark_mode = not st.session_state.dark_mode
     dm_icon = "☀️" if dark else "🌙"
     st.button(dm_icon, on_click=toggle_dark, help="Activar/Desactivar Modo Nocturno")
+
+with hdr_col3:
+    if st.button("🔄", help="Sincronizar y actualizar datos desde el Excel/SharePoint"):
+        st.cache_data.clear()
+        st.rerun()
 
 # ─── FILTROS (en área principal, siempre visibles) ──────────────────────────
 with st.expander("🔎 **Filtros** — clic para expandir", expanded=False):

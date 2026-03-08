@@ -256,20 +256,28 @@ section[data-testid="stSidebar"] span {{ color: {T['text']} !important; }}
 /* Plotly */
 .stPlotlyChart {{ border-radius: 12px; overflow: hidden; }}
 
-/* Botón toggle modo nocturno: reposo gris oscuro, hover inverso blanco */
+/* Botón toggle modo nocturno: especificidad máxima para superar Emotion CSS */
+div[data-testid="stButton"] > button,
+div[data-testid="stButton"] > button:not(:hover),
 .stButton > button {{
     background-color: #4B5563 !important;
     color: #ffffff !important;
     border: none !important;
     border-radius: 8px !important;
-    transition: all 0.2s ease-in-out !important;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out !important;
     box-shadow: none !important;
+    outline: none !important;
 }}
+div[data-testid="stButton"] > button:hover,
 .stButton > button:hover {{
     background-color: #ffffff !important;
     color: #003366 !important;
+    border: none !important;
     box-shadow: none !important;
 }}
+div[data-testid="stButton"] > button:focus,
+div[data-testid="stButton"] > button:active,
+div[data-testid="stButton"] > button:focus:not(:active),
 .stButton > button:focus,
 .stButton > button:active,
 .stButton > button:focus:not(:active) {{

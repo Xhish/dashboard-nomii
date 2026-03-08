@@ -608,6 +608,13 @@ default_start = max(date(_y, _m, 1), min_date)
 last_day = calendar.monthrange(today.year, today.month)[1]
 default_end = min(date(today.year, today.month, last_day), max_date)
 
+# Determinar fechas actuales del filtro (para el header)
+current_dates = st.session_state.get("fecha_rango", (default_start, default_end))
+if isinstance(current_dates, tuple) and len(current_dates) == 2:
+    hdr_start, hdr_end = current_dates
+else:
+    hdr_start, hdr_end = default_start, default_end
+
 # ─── HEADER ─────────────────────────────────────────────────────────────────
 hdr_col1, hdr_col2 = st.columns([9, 1])
 with hdr_col1:
@@ -615,9 +622,9 @@ with hdr_col1:
         f"""
         <div class="main-header">
             <div style="color: #f8fafc; font-size: 1.7rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; font-family: 'DM Sans', sans-serif;">
-                NOMII<span style="color: #20C6B6;"> · </span>Finance Dashboard</div>
+                NOMII<span style="color: #20C6B6;"> · </span>Dashboard</div>
             <div style="color: #B3D9EA; font-size: 0.88rem; margin: 0.3rem 0 0 0; font-family: 'DM Sans', sans-serif;">
-                {default_start.strftime('%d/%m/%Y')} → {default_end.strftime('%d/%m/%Y')}</div>
+                {hdr_start.strftime('%d/%m/%Y')} → {hdr_end.strftime('%d/%m/%Y')}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -641,6 +648,7 @@ with st.expander("🔎 **Filtros** — clic para expandir", expanded=False):
             value=(default_start, default_end),
             min_value=min_date,
             max_value=max_date,
+            key="fecha_rango",
         )
     with f_col2:
         all_cats = sorted(df_raw["Category"].dropna().unique())

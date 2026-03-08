@@ -136,7 +136,7 @@ def check_password():
             <div style="text-align:center; margin-bottom:1.4rem; font-family:'DM Sans',sans-serif;">
                 {logo_html}
                 <div style="color:{color_title}; font-size:1.25rem; font-weight:700;
-                     line-height:1.2; font-family:'DM Sans',sans-serif;">NOMII Dashboard</div>
+                     line-height:1.2; font-family:'DM Sans',sans-serif;">Dashboard</div>
                 <div style="color:{color_sub}; font-size:0.78rem; margin-top:0.25rem;
                      font-family:'DM Sans',sans-serif;">Ingresa tus credenciales para acceder</div>
             </div>

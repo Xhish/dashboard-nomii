@@ -1123,10 +1123,14 @@ with tab_ingresos:
         else:
             mom_str_r = ""
 
-        # MRR: Facturación planificada para ese mes específico
-        mrr_total = df_calendario[
-            df_calendario["FECHA"].dt.to_period("M") == period_obj
-        ]["MONTO"].sum()
+        # MRR: Facturación planificada RECURRENTE (SUSCR == 1) para ese mes específico
+        # Asegurarnos de que SUSCR existe y aplicar el filtro
+        mrr_mask = df_calendario["FECHA"].dt.to_period("M") == period_obj
+        if "SUSCR" in df_calendario.columns:
+            mrr_mask = mrr_mask & (df_calendario["SUSCR"] == 1)
+            
+        mrr_total = df_calendario[mrr_mask]["MONTO"].sum()
+        
         if mrr_total == 0:
             mrr_total = last_r
 

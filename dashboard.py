@@ -256,7 +256,7 @@ section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] label,
 section[data-testid="stSidebar"] span {{ color: {T['text']} !important; }}
 
 /* Branding */
-#MainMenu {{visibility: hidden;}} footer {{visibility: hidden;}} header {{visibility: hidden;}}
+/* #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;} */
 
 /* Plotly */
 .stPlotlyChart {{ border-radius: 12px; overflow: hidden; }}

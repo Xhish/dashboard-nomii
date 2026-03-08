@@ -1503,7 +1503,32 @@ with tab_kpis:
             <div class="exec-sub">Cantidad: {cuotas_por_cobrar_cant}</div>
         </div>
     </div>
+    """, unsafe_allow_html=True)
 
+    # CAMBIO 5: Expander con detalle de clientes atrasados (movido bajo Cuentas por Cobrar)
+    if cuotas_atrasadas_cant > 0:
+        with st.expander(f"⚠️ Ver {cuotas_atrasadas_cant} cuota(s) atrasada(s) — Detalle de clientes"):
+            detail_cols = [c for c in ["NOMBRE", "MONTO", "N° FACTURA", "FECHA", "PAIS", "ESTADO", "NOTA"] if c in atrasadas.columns]
+            df_atrasadas_display = atrasadas[detail_cols].copy()
+            if "FECHA" in df_atrasadas_display.columns:
+                df_atrasadas_display["FECHA"] = pd.to_datetime(df_atrasadas_display["FECHA"]).dt.strftime("%d/%m/%Y")
+            df_atrasadas_display = df_atrasadas_display.sort_values("MONTO", ascending=False)
+            st.dataframe(
+                df_atrasadas_display,
+                use_container_width=True,
+                height=min(38 * len(df_atrasadas_display) + 50, 400),
+                column_config={
+                    "MONTO": st.column_config.NumberColumn("Monto €", format="€%.2f"),
+                    "NOMBRE": st.column_config.TextColumn("Cliente", width="large"),
+                    "N° FACTURA": st.column_config.TextColumn("N° Factura"),
+                    "FECHA": st.column_config.TextColumn("Fecha"),
+                    "PAIS": st.column_config.TextColumn("País"),
+                    "NOTA": st.column_config.LinkColumn("Link Factura", display_text="Ver factura"),
+                },
+                hide_index=True,
+            )
+
+    st.markdown(f"""
     <div class="exec-section">📊 Resultados Financieros — {sel_month_label}</div>
     <div class="exec-row">
         <div class="exec-card">
@@ -1543,30 +1568,6 @@ with tab_kpis:
         </div>
     </div>
     """, unsafe_allow_html=True)
-
-    # CAMBIO 5: Expander con detalle de clientes atrasados
-    if cuotas_atrasadas_cant > 0:
-        with st.expander(f"⚠️ Ver {cuotas_atrasadas_cant} cuota(s) atrasada(s) — Detalle de clientes"):
-            detail_cols = [c for c in ["NOMBRE", "MONTO", "N° FACTURA", "FECHA", "PAIS", "ESTADO", "NOTA"] if c in atrasadas.columns]
-            df_atrasadas_display = atrasadas[detail_cols].copy()
-            if "FECHA" in df_atrasadas_display.columns:
-                df_atrasadas_display["FECHA"] = pd.to_datetime(df_atrasadas_display["FECHA"]).dt.strftime("%d/%m/%Y")
-            df_atrasadas_display = df_atrasadas_display.sort_values("MONTO", ascending=False)
-            st.dataframe(
-                df_atrasadas_display,
-                use_container_width=True,
-                height=min(38 * len(df_atrasadas_display) + 50, 400),
-                column_config={
-                    "MONTO": st.column_config.NumberColumn("Monto €", format="€%.2f"),
-                    "NOMBRE": st.column_config.TextColumn("Cliente", width="large"),
-                    "N° FACTURA": st.column_config.TextColumn("N° Factura"),
-                    "FECHA": st.column_config.TextColumn("Fecha"),
-                    "PAIS": st.column_config.TextColumn("País"),
-                    "NOTA": st.column_config.LinkColumn("Link Factura", display_text="Ver factura"),
-                },
-                hide_index=True,
-            )
-
     # ── Mini Charts ──────────────────────────────────────────────────────
     st.markdown('<div class="section-title">📈 Evolución Mensual</div>', unsafe_allow_html=True)
     ck1, ck2 = st.columns(2)

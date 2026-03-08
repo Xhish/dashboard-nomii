@@ -604,7 +604,7 @@ last_day = calendar.monthrange(today.year, today.month)[1]
 default_end = min(date(today.year, today.month, last_day), max_date)
 
 # ─── HEADER ─────────────────────────────────────────────────────────────────
-hdr_col1, hdr_col2 = st.columns([9, 1])
+hdr_col1, hdr_col2, hdr_col3 = st.columns([8, 1, 1])
 with hdr_col1:
     st.markdown(
         f"""
@@ -617,7 +617,13 @@ with hdr_col1:
         """,
         unsafe_allow_html=True,
     )
+
 with hdr_col2:
+    if st.button("🔄", help="Sincronizar y actualizar datos desde el Excel/SharePoint"):
+        st.cache_data.clear()
+        st.rerun()
+
+with hdr_col3:
     def toggle_dark():
         st.session_state.dark_mode = not st.session_state.dark_mode
     dm_icon = "☀️" if dark else "🌙"

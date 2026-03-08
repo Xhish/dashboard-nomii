@@ -160,7 +160,7 @@ span[data-baseweb="tag"] {{ background-color: {T['tag_bg']} !important; color: w
 span[data-baseweb="tag"] span[role="presentation"] {{ color: white !important; }}
 
 /* Buttons */
-.stButton > button {{ background-color: {'#1C3D5A' if dark else '#003366'}; color: white; border: none; border-radius: 8px; }}
+.stButton > button {{ background-color: {'#1C3D5A' if dark else '#4B5563'}; color: white; border: none; border-radius: 8px; }}
 .stButton > button:hover {{ background-color: #20C6B6; color: white; }}
 
 /* Slider */
@@ -203,21 +203,22 @@ button[data-testid="stSidebarCollapse"],
     border-color: {T['card_border']} !important;
 }}
 
-/* Opciones del dropdown: colores del tema */
+/* Opciones del dropdown: fondo oscuro NOMII, texto blanco siempre */
 [data-baseweb="popover"] ul,
 ul[data-baseweb="menu"],
 [data-baseweb="menu"] {{
-    background-color: {T['card_bg']} !important;
-    color: {T['text']} !important;
+    background-color: #002244 !important;
 }}
 [data-baseweb="option"] {{
-    background-color: {T['card_bg']} !important;
-    color: {T['text']} !important;
+    background-color: #002244 !important;
+    color: #f8fafc !important;
 }}
 [data-baseweb="option"]:hover, [data-baseweb="option"][aria-selected="true"] {{
-    background-color: {T['card_border']} !important;
-    color: {T['heading']} !important;
+    background-color: #003d7a !important;
+    color: #20C6B6 !important;
 }}
+/* Modo oscuro: mantener fondo y texto del expander al expandir */
+{'/* dark expander */ .stExpander { background-color: #161B22 !important; border-color: #30363D !important; } .streamlit-expanderHeader, .stExpander [data-testid="stExpanderHeader"], .stExpander summary { background-color: #161B22 !important; color: #E6EDF3 !important; } .streamlit-expanderContent, .stExpander [data-testid="stExpanderDetails"] { background-color: #161B22 !important; }' if dark else ''}
 
 /* Ocultar recuadro de búsqueda en multiselect */
 div[data-baseweb="select"] input[type="text"],

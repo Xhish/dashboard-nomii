@@ -192,7 +192,7 @@ ul[data-baseweb="menu"],
 }}
 [data-baseweb="option"] {{
     background-color: {T['card_bg']};
-    color: {T['text']};
+    color: {T['text']} !important;
 }}
 [data-baseweb="option"]:hover, [data-baseweb="option"][aria-selected="true"] {{
     background-color: {'#1C3D5A' if dark else '#B3D9EA'};

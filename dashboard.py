@@ -619,13 +619,23 @@ else:
     hdr_start, hdr_end = default_start, default_end
 
 # ─── HEADER ─────────────────────────────────────────────────────────────────
+import os, base64
+
 hdr_col1, hdr_col2 = st.columns([9, 1])
 with hdr_col1:
+    icon_path = "icon_nomii.png"
+    icon_b64 = ""
+    if os.path.exists(icon_path):
+        with open(icon_path, "rb") as f:
+            icon_b64 = base64.b64encode(f.read()).decode()
+            
+    icon_html = f'<img src="data:image/png;base64,{icon_b64}" style="height:1.7rem; margin-right: 0.5rem; vertical-align: middle;">' if icon_b64 else ''
+
     st.markdown(
         f"""
         <div class="main-header">
-            <div style="color: #f8fafc; font-size: 1.7rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; font-family: 'DM Sans', sans-serif;">
-                NOMII<span style="color: #20C6B6;"> · </span>Dashboard</div>
+            <div style="display: flex; align-items: center; color: #f8fafc; font-size: 1.7rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; font-family: 'DM Sans', sans-serif;">
+                {icon_html} NOMII<span style="color: #20C6B6;"> · </span>Dashboard</div>
             <div style="color: #B3D9EA; font-size: 0.88rem; margin: 0.3rem 0 0 0; font-family: 'DM Sans', sans-serif;">
                 {hdr_start.strftime('%d/%m/%Y')} → {hdr_end.strftime('%d/%m/%Y')}</div>
         </div>

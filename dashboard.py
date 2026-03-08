@@ -1195,6 +1195,7 @@ with tab_ingresos:
                     hole=0.55,
                     marker=dict(colors=PALETTE),
                     textinfo="percent",
+                    insidetextfont=dict(size=11, color="white"),
                     textfont=dict(size=11, color=T["text"]),
                     hovertemplate="<b>%{label}</b><br>€%{value:,.0f}<br>%{percent}<extra></extra>",
                 )

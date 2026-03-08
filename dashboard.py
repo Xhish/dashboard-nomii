@@ -230,6 +230,18 @@ button[data-testid="stSidebarCollapse"],
     border-radius: 0 0 8px 8px !important;
 }}
 
+/* Date input dentro de filtros: fondo oscuro, texto blanco en modo claro */
+.stExpander .stDateInput div[data-baseweb="input"] {{
+    background-color: #002244 !important;
+    border-color: rgba(32,198,182,0.35) !important;
+}}
+.stExpander .stDateInput div[data-baseweb="input"] input {{
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+}}
+/* Modo oscuro: date input con texto oscuro sobre fondo claro */
+{'/* Dark mode date input fix */ .stExpander .stDateInput div[data-baseweb="input"] { background-color: #1C2128 !important; border-color: #30363D !important; } .stExpander .stDateInput div[data-baseweb="input"] input { color: #E6EDF3 !important; -webkit-text-fill-color: #E6EDF3 !important; }' if dark else ''}
+
 /* Lista desplegable de opciones: azul oscuro NOMII */
 [data-baseweb="popover"] ul,
 ul[data-baseweb="menu"],
@@ -446,8 +458,8 @@ import calendar
 min_date = df_raw["Date"].min().date()
 max_date = df_raw["Date"].max().date()
 today = date.today()
-# 3 months: current + 2 previous
-_m = today.month - 2
+# 6 months: current + 5 previous
+_m = today.month - 5
 _y = today.year
 if _m <= 0:
     _m += 12
@@ -864,7 +876,8 @@ with tab_gastos:
         )
     )
     fig_cp.update_layout(
-        **{k: v for k, v in CHART_LAYOUT.items() if k != "margin"},
+        **{k: v for k, v in CHART_LAYOUT.items() if k not in ("margin", "title_font_color")},
+        title=dict(text=""),
         height=480,
         xaxis=dict(gridcolor=NOMII["grid_color"], tickformat="€,.0f"),
         yaxis=dict(tickfont=dict(size=11, color=T["text"])),

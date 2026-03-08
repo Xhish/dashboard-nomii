@@ -185,32 +185,69 @@ button[data-testid="stSidebarCollapse"],
 .stTabs [data-baseweb="tab"] {{ color: {T['text2']}; }}
 .stTabs [aria-selected="true"] {{ color: {T['heading']} !important; }}
 
-/* Inputs */
+/* Inputs globales */
 .stSelectbox div[data-baseweb="select"] > div,
 .stMultiSelect div[data-baseweb="select"] > div {{
     background-color: {T['card_bg']} !important; color: {T['text']} !important;
     border-color: {T['card_border']} !important;
 }}
 
-/* Filter section: white/light text for labels in expander */
+/* ── FILTROS: campo de selección → azul oscuro NOMII ── */
+.stExpander .stSelectbox div[data-baseweb="select"] > div,
+.stExpander .stMultiSelect div[data-baseweb="select"] > div {{
+    background-color: #002244 !important;
+    color: #f8fafc !important;
+    border-color: rgba(32,198,182,0.35) !important;
+}}
+/* Etiquetas y títulos de filtros: blanco */
 .stExpander label, .stExpander .stMarkdown p, .stExpander .stMarkdown span,
 .stExpander .stSelectbox label, .stExpander .stMultiSelect label,
 .stExpander .stDateInput label {{
-    color: {'#E6EDF3' if dark else '#FFFFFF'} !important;
+    color: #f8fafc !important;
 }}
+/* Texto toggle del expander */
 .stExpander summary span, .stExpander [data-testid="stExpanderToggleIcon"] {{
-    color: {'#E6EDF3' if dark else '#FFFFFF'} !important;
+    color: #f8fafc !important;
 }}
-.stExpander {{
-    background: {'rgba(22,27,34,0.6)' if dark else 'rgba(0,51,102,0.8)'};
-    border-radius: 12px; padding: 0.5rem; border: 1px solid {'#30363D' if dark else 'rgba(179,217,234,0.4)'};
+/* Fondo del expander (filtros y cuotas): azul oscuro siempre */
+.stExpander, .stExpander > details, .stExpander > details[open] {{
+    background: {'rgba(22,27,34,0.85)' if dark else '#002244'} !important;
+    border-radius: 12px; padding: 0.5rem;
+    border: 1px solid {'#30363D' if dark else 'rgba(32,198,182,0.25)'} !important;
+}}
+/* Header del expander: mismo azul oscuro, letras blancas, sin cambio al abrir */
+.streamlit-expanderHeader,
+.stExpander [data-testid="stExpanderHeader"],
+.stExpander summary {{
+    color: #f8fafc !important;
+    background-color: {'rgba(22,27,34,0.85)' if dark else '#002244'} !important;
+    border-radius: 8px !important;
+}}
+/* Contenido interno del expander: mismo fondo */
+.streamlit-expanderContent,
+.stExpander [data-testid="stExpanderDetails"] {{
+    background-color: {'rgba(22,27,34,0.85)' if dark else '#002244'} !important;
+    border-radius: 0 0 8px 8px !important;
 }}
 
-/* Dark mode search bar: dark text for input fields */
-{'div[data-baseweb="select"] input, div[data-baseweb="input"] input, .stMultiSelect input, .stSelectbox input, input[aria-autocomplete="list"], input[type="text"] { color: #003366 !important; background-color: #f8fafc !important; }' if dark else ''}
+/* Lista desplegable de opciones: azul oscuro NOMII */
+[data-baseweb="popover"] ul,
+ul[data-baseweb="menu"],
+[data-baseweb="menu"] {{
+    background-color: #002244 !important;
+}}
+[data-baseweb="option"] {{
+    background-color: #002244 !important;
+    color: #f8fafc !important;
+}}
+[data-baseweb="option"]:hover, [data-baseweb="option"][aria-selected="true"] {{
+    background-color: #003d7a !important;
+    color: #20C6B6 !important;
+}}
 
-/* Expanders */
-.streamlit-expanderHeader {{ color: {T['heading']} !important; background-color: {T['card_bg']} !important; }}
+/* Modo oscuro: ocultar recuadro blanco de búsqueda en multiselect */
+{'div[data-baseweb="select"] input[type="text"], div[data-baseweb="input"] input[type="text"], input[aria-autocomplete="list"] { background-color: transparent !important; color: #E6EDF3 !important; width: 2px !important; min-width: 2px !important; caret-color: #E6EDF3; }' if dark else 'div[data-baseweb="select"] input[type="text"], input[aria-autocomplete="list"] { background-color: transparent !important; color: #f8fafc !important; caret-color: #f8fafc; }'}
+
 .stDataFrame {{ border-radius: 12px; overflow: hidden; }}
 </style>
 """, unsafe_allow_html=True)
@@ -1178,18 +1215,20 @@ with tab_kpis:
     <style>
     .exec-row {{ display: flex; gap: 1rem; margin-bottom: 1.2rem; flex-wrap: wrap; }}
     .exec-card {{
-        flex: 1; min-width: 180px; background: {T['card_bg']}; border: 2px solid {T['card_border']};
-        border-radius: 14px; padding: 1.2rem 1rem; text-align: center;
-        box-shadow: 0 2px 8px rgba(0,51,102,{'0.2' if dark else '0.06'});
+        flex: 1; min-width: 180px; background: {T['card_bg']}; border: 1px solid {T['card_border']};
+        border-radius: 14px; padding: 1.3rem 1.5rem; text-align: left;
+        box-shadow: 0 1px 4px rgba(0,0,0,{'0.15' if dark else '0.04'});
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
     }}
-    .exec-card.highlight {{ border-color: {T['card_highlight_border']}; background: {T['card_highlight_bg']}; }}
+    .exec-card:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,{'0.3' if dark else '0.07'}); }}
+    .exec-card.highlight {{ border-color: {T['section_border']}; }}
     .exec-card.warn {{ border-color: #e74c3c; }}
     .exec-card.green {{ border-color: #20C6B6; }}
-    .exec-label {{ font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-                   letter-spacing: 0.06em; color: {T['heading']}; margin-bottom: 0.3rem; }}
-    .exec-value {{ font-size: 1.7rem; font-weight: 700; color: {T['kpi_value']}; line-height: 1.2; }}
+    .exec-label {{ font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+                   letter-spacing: 0.8px; color: {T['label_color']}; margin-bottom: 0.35rem; }}
+    .exec-value {{ font-family: 'JetBrains Mono', monospace; font-size: 1.55rem;
+                   font-weight: 700; color: {T['kpi_value']}; line-height: 1.2; }}
     .exec-value.turquoise {{ color: #20C6B6; }}
-    .exec-value.gold {{ color: {'#FFCC00' if dark else '#d4a017'}; }}
     .exec-value.red {{ color: {'#FF6B6B' if dark else '#e74c3c'}; }}
     .exec-value.green {{ color: {'#3BC97C' if dark else '#0a8f5f'}; }}
     .exec-sub {{ font-size: 0.75rem; color: {T['text2']}; margin-top: 0.2rem; }}
@@ -1213,7 +1252,7 @@ with tab_kpis:
         </div>
         <div class="exec-card highlight">
             <div class="exec-label">Ratio Cobranza</div>
-            <div class="exec-value gold">{ratio_cobranza:.0f}%</div>
+            <div class="exec-value turquoise">{ratio_cobranza:.0f}%</div>
         </div>
     </div>
 
@@ -1230,7 +1269,7 @@ with tab_kpis:
         </div>
         <div class="exec-card">
             <div class="exec-label">Cuotas por Cobrar</div>
-            <div class="exec-value gold">€{cuotas_por_cobrar_monto:,.0f}</div>
+            <div class="exec-value">€{cuotas_por_cobrar_monto:,.0f}</div>
             <div class="exec-sub">Cantidad: {cuotas_por_cobrar_cant}</div>
         </div>
     </div>

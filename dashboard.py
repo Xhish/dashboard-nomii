@@ -181,23 +181,7 @@ button[data-testid="stSidebarCollapse"],
 .stTabs [data-baseweb="tab"] {{ color: {T['text2']}; }}
 .stTabs [aria-selected="true"] {{ color: {T['heading']} !important; }}
 
-/* Inputs globales */
-.stSelectbox div[data-baseweb="select"] > div,
-.stMultiSelect div[data-baseweb="select"] > div {{
-    background-color: {T['card_bg']} !important; color: {T['text']} !important;
-    border-color: {T['card_border']} !important;
-}}
-
 /* ── EXPANDERS: sin forzar colores, usa el tema nativo ── */
-/* Eliminar cualquier override que bloquee el color del expander */
-
-/* Dropdowns de selección: usan colores del tema */
-.stExpander .stSelectbox div[data-baseweb="select"] > div,
-.stExpander .stMultiSelect div[data-baseweb="select"] > div {{
-    background-color: {T['card_bg']} !important;
-    color: {T['text']} !important;
-    border-color: {T['card_border']} !important;
-}}
 
 /* Opciones del dropdown: fondo oscuro NOMII, texto blanco siempre */
 [data-baseweb="popover"] ul,

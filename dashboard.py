@@ -711,9 +711,19 @@ with tab_gastos:
     gasto_pct_ingresos = (total_spend / ingresos_cobrados_total * 100) if ingresos_cobrados_total > 0 else 0
     pct_cls = "positive" if gasto_pct_ingresos <= 80 else "negative"
     
+    # Get the name of the latest month in the filtered range for the label
+    last_month_name = monthly_totals.index[-1] if not monthly_totals.empty else ""
+    if last_month_name:
+        last_month_display = datetime.strptime(last_month_name, "%Y-%m").strftime("%m/%Y")
+        spend_label = f"Gasto Neto ({last_month_display})"
+        spend_value = last_m
+    else:
+        spend_label = "Gasto Total"
+        spend_value = total_spend
+
     cols = st.columns(5)
     kpis = [
-        ("Gasto Total", f"€{total_spend:,.0f}", mom_str),
+        (spend_label, f"€{spend_value:,.0f}", mom_str),
         ("Gasto % s/ Ingresos", f"{gasto_pct_ingresos:.1f}%", f'<div class="kpi-delta {pct_cls}">Objetivo: < 80%</div>'),
         ("Transacciones", f"{n_transactions:,}", ""),
         ("Ticket Promedio", f"€{avg_ticket:,.0f}", ""),
@@ -1109,42 +1119,48 @@ with tab_ingresos:
     else:
         mom_str_r = ""
 
-    # ── MRR real: suma de facturación planificada del mes más reciente en df_calendario
-    # df_calendario representa el billing recurrente contractual, no el ticket promedio
-    last_cal_period = df_calendario["FECHA"].dt.to_period("M").max()
-    mrr_total = df_calendario[
-        df_calendario["FECHA"].dt.to_period("M") == last_cal_period
-    ]["MONTO"].sum()
-    if mrr_total == 0:
-        # Fallback: ingreso real del mes más reciente en el rango filtrado
-        mrr_total = monthly_rev.iloc[-1] if len(monthly_rev) > 0 else total_rev
-
-    # ── Churn Rate mensual correcto: eliminados este mes / activos inicio de mes
-    # Usar df_cohortes (tiene datos granulares por mes) en lugar del total histórico
-    coh_sorted_ing = df_cohortes.dropna(subset=["MES"]).sort_values("MES")
-    # Buscar el mes más reciente dentro del rango de fechas filtrado
-    coh_in_range = coh_sorted_ing[
-        coh_sorted_ing["MES"].dt.date <= d_end
-    ]
-    if len(coh_in_range) > 0 and "ELIMINADOS X MES" in coh_in_range.columns:
-        last_coh = coh_in_range.iloc[-1]
-        elim_mes = int(last_coh.get("ELIMINADOS X MES", 0) or 0)
-        act_fin_mes = int(last_coh.get("CANTIDAD CLIENTES ACTIVOS X MES", 0) or 0)
-        activos = act_fin_mes
-        # Activos inicio = activos fin + eliminados del mes (antes de que se fueran)
-        activos_inicio_mes = act_fin_mes + elim_mes
-        churn_rate = (elim_mes / activos_inicio_mes * 100) if activos_inicio_mes > 0 else 0
+    # ── MRR y Churn sincronizados con el último mes DEL RANGO
+    if len(monthly_rev) > 0:
+        last_month_key = monthly_rev.index[-1]  # "YYYY-MM"
+        last_month_display = datetime.strptime(last_month_key, "%Y-%m").strftime("%m/%Y")
+        
+        # MRR: Facturación planificada para ese mes específico
+        period_obj = pd.Period(last_month_key, freq="M")
+        mrr_total = df_calendario[
+            df_calendario["FECHA"].dt.to_period("M") == period_obj
+        ]["MONTO"].sum()
+        
+        if mrr_total == 0:
+            mrr_total = monthly_rev.iloc[-1]
+            
+        # Churn del mes específico desde cohortes
+        coh_row = df_cohortes[df_cohortes["MES"].dt.to_period("M") == period_obj]
+        if not coh_row.empty:
+            elim_mes = int(coh_row.iloc[0].get("ELIMINADOS X MES", 0) or 0)
+            act_fin = int(coh_row.iloc[0].get("CANTIDAD CLIENTES ACTIVOS X MES", 0) or 0)
+            activos = act_fin
+            act_inicio = act_fin + elim_mes
+            churn_rate = (elim_mes / act_inicio * 100) if act_inicio > 0 else 0
+        else:
+            activos = n_clients
+            churn_rate = 0
+            
+        rev_label = f"Ingreso Neto ({last_month_display})"
+        rev_value = last_r
+        mrr_delta = f'<div class="kpi-delta positive">Mes: {last_month_display}</div>'
     else:
-        # Fallback a resumen_clientes si no hay datos de cohortes
-        df_clientes_fb = load_resumen_clientes()
-        activos = len(df_clientes_fb[df_clientes_fb["ESTADO"].isin(["OK", "¡REGULARIZAR!"])]) if df_clientes_fb is not None else n_clients
+        rev_label = "Ingreso Neto Total"
+        rev_value = total_rev
+        mrr_total = total_rev
+        activos = n_clients
         churn_rate = 0
+        mrr_delta = ""
 
     cols_r = st.columns(5)
     kpis_r = [
-        ("Ingreso Neto Total", f"€{total_rev:,.0f}", mom_str_r),
-        ("MRR (Facturación Recurrente)", f"€{mrr_total:,.0f}", f'<div class="kpi-delta positive">Mes: {last_cal_period.strftime("%m/%Y")}</div>'),
-        ("ARPU Promedio", f"€{avg_ing:,.0f}", ""),
+        (rev_label, f"€{rev_value:,.0f}", mom_str_r),
+        ("MRR (Recurrente)", f"€{mrr_total:,.0f}", mrr_delta),
+        ("ARPU Promedio", f"€{(rev_value / activos if activos > 0 else 0):,.0f}", ""),
         ("Clientes Activos", f"{activos}", ""),
         ("Churn Mensual", f"{churn_rate:.1f}%", f'<div class="kpi-delta {"negative" if churn_rate > 5 else "positive"}">Objetivo: < 5% / mes</div>'),
     ]

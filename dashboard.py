@@ -720,12 +720,16 @@ with tab_gastos:
     pct_cls = "positive" if gasto_pct_ingresos <= 80 else "negative"
 
     cols = st.columns(5)
+    
+    # Reutilizar el last_month_display si existe, sino un string vacío
+    month_indicator = f'<div class="kpi-delta positive">Mes: {last_month_display}</div>' if "last_month_display" in locals() and last_m > 0 else ""
+
     kpis = [
         (spend_label, f"€{spend_value:,.0f}", mom_str),
         ("Gasto % s/ Ingresos", f"{gasto_pct_ingresos:.1f}%", f'<div class="kpi-delta {pct_cls}">Objetivo: < 80%</div>'),
-        ("Transacciones", f"{n_transactions:,}", ""),
-        ("Ticket Promedio", f"€{avg_ticket:,.0f}", ""),
-        ("Proveedores", f"{n_counterparties}", ""),
+        ("Transacciones", f"{n_transactions:,}", month_indicator),
+        ("Ticket Promedio", f"€{avg_ticket:,.0f}", month_indicator),
+        ("Proveedores", f"{n_counterparties}", month_indicator),
     ]
     for col, (label, value, delta) in zip(cols, kpis):
         col.markdown(
